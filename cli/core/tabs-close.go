@@ -15,21 +15,8 @@ func (a *App) TabsClose(query string) {
 	fzfFlags := []string{
 		// Case-insensitive
 		"-i",
-		"--black",
 		"--ansi",
-		"--color=fg:246,fg+:167,bg+:black",
-		"--no-bold",
-		"--no-hscroll",
-		"--layout=reverse",
-		"--bind",
-		"change:first",
-		"--height",
-		"50%",
-		"--no-separator",
-		"--border=bold",
 		"--border-label=CLOSE TAB",
-		"--padding",
-		"7%",
 		"--exact",
 		"--no-sort",
 		"--scheme=history",
@@ -37,29 +24,21 @@ func (a *App) TabsClose(query string) {
 		"--marker=❌",
 		"--query",
 		query,
+		// fzf use of {+1} : '+' is for one line space-separated, '1' for field 1 i.e tabs.id
+		"--bind=enter:accept-non-empty+become(echo ::close::{+1})",
 	}
 	res, _ := ChooseTab(&tabs, a.ui, fzfFlags)
 
-	chosenTabs := strings.Split(res, "\n")
-	tabIds := []string{}
+	_, ids, foundClose := strings.Cut(res, "::close::")
 
-	for _, tab := range chosenTabs {
-		id, _, found := strings.Cut(strings.TrimSpace(tab), " ")
-		if !found {
-			continue
-		}
-		tabIds = append(tabIds, id)
-	}
-
-	// user may not choose any tab, exit !
-	if len(tabIds) == 0 {
+	if !foundClose {
 		return
 	}
 
 	_, err := a.browser.Send(
 		models.Command{
 			Command: "close-tabs",
-			Args:    strings.Join(tabIds, ","),
+			Args:    strings.Join(strings.Split(ids, " "), ","),
 		},
 	)
 	if err != nil {

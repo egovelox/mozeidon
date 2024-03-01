@@ -16,36 +16,25 @@ func (a *App) TabsSwitch(query string) {
 	fzfFlags := []string{
 		// Case-insensitive
 		"-i",
-		"--black",
 		"--ansi",
-		"--color=fg:246,fg+:150,bg+:black",
-		"--no-bold",
-		"--no-hscroll",
-		"--layout=reverse",
-		"--bind",
-		"change:first",
-		"--height",
-		"50%",
-		"--no-separator",
-		"--border=bold",
 		"--border-label=SWITCH TAB",
-		"--padding",
-		"7%",
 		"--header-lines=1",
 		"--exact",
 		"--no-sort",
 		"--scheme=history",
 		"--query",
 		query,
+		// fzf use of {+1} : '+' is for one line space-separated, '1' for field 1 i.e tabs.id
+		"--bind=enter:accept-non-empty+become(echo ::switch::{+1})",
 	}
 	res, err := ChooseTab(&tabs, a.ui, fzfFlags)
 
-	id, _, found := strings.Cut(res, " ")
-	// user may not choose any tab, exit !
-	if !found {
+	_, id, foundSwitch := strings.Cut(res, "::switch::")
+
+	// user may not choose anything, exit !
+	if !foundSwitch {
 		return
 	}
-
 	_, err = a.browser.Send(
 		models.Command{
 			Command: "switch-tab",

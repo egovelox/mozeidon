@@ -2,6 +2,10 @@ import { Port } from "src/models/port"
 import MiniSearch from "minisearch"
 import { Command } from "src/models/command"
 
+export async function openTab(port: Port, { args }: Command) {
+  await browser.tabs.create({ url: `https://www.google.com/search?q=${args}` })
+  port.postMessage({ data: null });
+}
 export function getTabs(port: Port, { command: cmd }: Command) {
   browser.tabs.query({ currentWindow: true })
   .then((tabs) => {
