@@ -15,7 +15,18 @@ func InitConfig() (*viper.Viper, error) {
 
 	v.SetDefault(
 		"tabs",
-		map[string]string{"close_key": "ctrl-p", "open_key": "ctrl-o"},
+		map[string]string{"fzf_close_key": "ctrl-p", "fzf_open_key": "ctrl-o"},
+	)
+
+	v.SetDefault(
+		"fzf-tmux",
+		// remember to add "--" as the last item of opts
+		map[string]string{"command": "fzf-tmux", "opts": "-p 70% --"},
+	)
+
+	v.SetDefault(
+		"fzf",
+		map[string]string{"command": "fzf", "opts": ""},
 	)
 
 	err := v.ReadInConfig()

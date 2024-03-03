@@ -6,18 +6,24 @@ import (
 	"github.com/egovelox/mozicli/browser/core/models"
 )
 
-func (a *App) TabsGet() (models.Tabs, error) {
-	result, err := a.browser.Send(
-		models.Command{
-			Command: "get-tabs",
-		},
-	)
-	if err != nil {
-		return models.Tabs{}, err
-	}
-	tabs := models.Tabs{}
-	// TODO: handle error
-	json.Unmarshal(result.Data, &tabs)
+func (a *App) TabsGet() <-chan models.Tabs {
 
-	return tabs, nil
+	channel := make(chan models.Tabs)
+
+	go func() {
+		defer close(channel)
+		for result := range a.browser.Send(
+			models.Command{
+				Command: "get-tabs",
+			},
+		) {
+			tabs := models.Tabs{}
+			// TODO: handle error
+			json.Unmarshal(result.Data, &tabs)
+			channel <- tabs
+		}
+	}()
+
+	return channel
+
 }

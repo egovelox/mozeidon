@@ -1,8 +1,6 @@
 package core
 
 import (
-	"log"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -10,8 +8,6 @@ import (
 )
 
 func (a *App) Bookmarks(query string) {
-	// TODO: handle error
-	bookmarks, _ := a.BookmarksGet()
 
 	fzfFlags := []string{
 		// Case-insensitive
@@ -22,7 +18,7 @@ func (a *App) Bookmarks(query string) {
 		"--no-sort",
 		"--bind=enter:accept-non-empty",
 	}
-	res, _ := ChooseBookmark(&bookmarks, a.ui, fzfFlags)
+	res, _ := a.ChooseBookmark(a.BookmarksGet(), fzfFlags)
 	_, httpsUrl, foundHttps := strings.Cut(res, "https://")
 	_, httpUrl, foundHttp := strings.Cut(res, "http://")
 
@@ -35,17 +31,12 @@ func (a *App) Bookmarks(query string) {
 		return
 	}
 
-	_, err := a.browser.Send(
+	a.browser.Send(
 		models.Command{
 			Command: "open-tab",
 			Args:    url,
 		},
 	)
-
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
 
 	cmd := exec.Command("open", "-a", "firefox")
 	cmd.Run()

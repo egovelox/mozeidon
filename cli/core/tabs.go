@@ -2,8 +2,6 @@ package core
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -12,7 +10,6 @@ import (
 
 func (a *App) Tabs(query string) {
 	// TODO: handle error
-	tabs, err := a.TabsGet()
 	tabsConfig := a.viper.GetStringMapString("tabs")
 
 	fzfFlags := []string{
@@ -32,33 +29,35 @@ func (a *App) Tabs(query string) {
 		"--bind=enter:accept-non-empty+become(echo ::switch::{+1})",
 		fmt.Sprintf(
 			"--bind=%s:accept-non-empty+become(echo ::close::{+1})",
-			tabsConfig["close_key"],
+			tabsConfig["fzf_close_key"],
 		),
-		fmt.Sprintf("--bind=%s:print-query", tabsConfig["open_key"]),
+		fmt.Sprintf("--bind=%s:print-query", tabsConfig["fzf_open_key"]),
 		fmt.Sprintf(
 			`--header= close [%s], open [%s]`,
-			tabsConfig["close_key"],
-			tabsConfig["open_key"],
+			tabsConfig["fzf_close_key"],
+			tabsConfig["fzf_open_key"],
 		),
 		"--header-first",
 	}
-	res, err := ChooseTab(&tabs, a.ui, fzfFlags)
+	res, err := a.ChooseTab(a.TabsGet(), fzfFlags)
 
+	if err != nil {
+		// TODO: find a way to log a useful error
+		// (not logging the error coming from fzf Ctrl-c)
+		// os.Exit(1)
+		return
+	}
 	_, id1, foundSwitch := strings.Cut(res, "::switch::")
 	_, id2, foundClose := strings.Cut(res, "::close::")
 
 	if !foundSwitch && !foundClose {
 		if len(res) > 0 {
-			_, err = a.browser.Send(
+			<-a.browser.Send(
 				models.Command{
 					Command: "open-tab",
 					Args:    res,
 				},
 			)
-			if err != nil {
-				log.Println(err)
-				os.Exit(1)
-			}
 			cmd := exec.Command("open", "-a", "firefox")
 			cmd.Run()
 		} else {
@@ -68,29 +67,21 @@ func (a *App) Tabs(query string) {
 	}
 
 	if foundSwitch {
-		_, err = a.browser.Send(
+		<-a.browser.Send(
 			models.Command{
 				Command: "switch-tab",
 				Args:    id1,
 			},
 		)
-		if err != nil {
-			log.Println(err)
-			os.Exit(1)
-		}
 		cmd := exec.Command("open", "-a", "firefox")
 		cmd.Run()
 	}
 	if foundClose {
-		_, err = a.browser.Send(
+		<-a.browser.Send(
 			models.Command{
 				Command: "close-tabs",
 				Args:    strings.Join(strings.Split(id2, " "), ","),
 			},
 		)
-		if err != nil {
-			log.Println(err)
-			os.Exit(1)
-		}
 	}
 }

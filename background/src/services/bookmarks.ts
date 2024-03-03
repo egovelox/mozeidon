@@ -1,26 +1,32 @@
+import { log } from "../logger";
 import { Command } from "src/models/command"
 import { Port } from "src/models/port"
-//import MiniSearch from "minisearch"
 
 export function getRecentBookmarks(port: Port, { command: _cmd }: Command) {
 
-  browser.bookmarks.getRecent(10000)
-  .then(async (items) => {
-    const start = Date.now()
-    const chunkSize = 300;
+  browser.bookmarks.getRecent(50000)
+  .then(async (bookmarks) => {
+    const startTime = Date.now()
+    const chunkSize = 800;
     const chunks = [];
-    for (let i = 0; i < items.length; i += chunkSize) {
-      const chunk = items.slice(i, i + chunkSize);
-      chunks.push(processChunk(chunk));
+
+    // chunk bookmarks
+    for (let i = 0; i < bookmarks.length; i += chunkSize) {
+      const chunk = bookmarks.slice(i, i + chunkSize);
+      chunks.push(chunk);
     }
 
-    let bms: {}[] = []
-    const processed = await Promise.all(chunks)
-    processed.forEach(res => { bms = bms.concat(res) })
+    // no parallelism, maintain order of bookmarks
+    for (const chunk of chunks) {
+      const bms = await processChunk(chunk)
+      port.postMessage({data: bms})
+    }
 
-    const end = Date.now()
-    console.log(`sending back ${bms.length} bookmarks in ${end- start}`)
-    port.postMessage({ data: bms });
+    const endTime = Date.now()
+    log(`sending back bookmarks in ${endTime - startTime} ms`)
+    // pause 100ms, or this end message may be received before the last chunk
+    await new Promise(res => setTimeout(res, 100))
+    port.postMessage({data:"end"});
   })
 }
 

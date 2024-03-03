@@ -6,18 +6,23 @@ import (
 	"github.com/egovelox/mozicli/browser/core/models"
 )
 
-func (a *App) BookmarksGet() (models.Bookmarks, error) {
-	result, err := a.browser.Send(
-		models.Command{
-			Command: "get-bookmarks",
-		},
-	)
-	if err != nil {
-		return models.Bookmarks{}, err
-	}
-	bookmarks := models.Bookmarks{}
-	// TODO: handle error
-	json.Unmarshal(result.Data, &bookmarks)
+func (a *App) BookmarksGet() <-chan models.Bookmarks {
+	channel := make(chan models.Bookmarks)
 
-	return bookmarks, nil
+	go func() {
+		defer close(channel)
+		for result := range a.browser.Send(
+			models.Command{
+				Command: "get-bookmarks",
+			},
+		) {
+			bookmarks := models.Bookmarks{}
+			// TODO: handle error
+			json.Unmarshal(result.Data, &bookmarks)
+			channel <- bookmarks
+		}
+
+	}()
+
+	return channel
 }

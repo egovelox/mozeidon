@@ -12,21 +12,33 @@ type IpcClient struct {
 	*ipc.Client
 }
 
+type EndMessage struct {
+	End string `json:"data"`
+}
+
 func (ipc *IpcClient) Send(
 	cmd models.Command,
-) (models.CommandResult, error) {
+) <-chan models.CommandResult {
 
 	// TODO: handle error
 	jsonCmd, _ := json.Marshal(cmd)
 	ipc.Write(1, []byte(jsonCmd))
 
-	for {
-		// TODO: handle error
-		message, _ := ipc.Read()
-		if message.MsgType > 0 {
-			return models.CommandResult{Data: message.Data}, nil
+	channel := make(chan models.CommandResult)
+	go func() {
+		defer close(channel)
+		for {
+			// TODO: handle error
+			message, _ := ipc.Read()
+			if message.MsgType > 0 {
+				if string(message.Data) == `{"data":"end"}` {
+					break
+				}
+				channel <- models.CommandResult{Data: message.Data}
+			}
 		}
-	}
+	}()
+	return channel
 }
 
 func NewIpcClient(host string) *IpcClient {

@@ -36,8 +36,8 @@ func proxy(ipcName string) {
 
 	browserMessagingClient := (&host.Host{}).Init()
 
-	// Listen to, and handle incoming message
-	// TODO: log errors in a file ?
+	// Listen to client, and handle incoming message
+	// TODO: log errors in a file (no stdout available here) ?
 	for {
 		message, _ := ipcServer.Read()
 		if message.MsgType > 0 {
@@ -52,14 +52,25 @@ func proxy(ipcName string) {
 				os.Exit(1)
 			}
 
-			// Wait for browser message
-			response := &host.H{}
-			if err := browserMessagingClient.OnMessage(os.Stdin, response); err != nil {
-				os.Exit(1)
-			}
+			for {
+				// Wait for browser messages
+				// browser may send many messages before the data:end message
+				response := &host.H{}
+				if err := browserMessagingClient.OnMessage(os.Stdin, response); err != nil {
+					os.Exit(1)
+				}
 
-			responseMessage, _ := json.Marshal(response)
-			err = ipcServer.Write(1, responseMessage)
+				// send back browser message to client
+				responseMessage, _ := json.Marshal(response)
+				err = ipcServer.Write(1, responseMessage)
+				if err != nil {
+					os.Exit(1)
+				}
+				// end of browser response for the incoming message
+				if string(responseMessage) == `{"data":"end"}` {
+					break
+				}
+			}
 		}
 	}
 }

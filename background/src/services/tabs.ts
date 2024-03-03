@@ -1,43 +1,32 @@
 import { Port } from "src/models/port"
 import { Command } from "src/models/command"
+import { log } from "../logger"
 
 export async function openTab(port: Port, { args }: Command) {
   try {
     const url = new URL(args!)
-    console.log("open tab")
+    log("open tab")
     await browser.tabs.create({ url: url.toString() })
   } catch(_) {
     // if not an url, use google
-    console.log("open google tab")
+    log("open google tab")
     await browser.tabs.create({ url: `https://www.google.com/search?q=${args}` })
   }
-  port.postMessage({ data: null });
+  port.postMessage({data:"end"});
 }
 
 export function getTabs(port: Port, { command: _cmd }: Command) {
   browser.tabs.query({ currentWindow: true })
-  .then((tabs) => {
+  .then(async (tabs) => {
     let returnedTabs = tabs.slice()
 
     tabs.sort((a,b) => b.lastAccessed! - a.lastAccessed!)
-    const firstOrderedTabs = tabs.slice(0,5)
+    const firstOrderedTabs = tabs.slice(0,10)
 
-    // returnedTabs first 5 items are the 5 latest accessed tabs.
+    // returnedTabs first 10 items are the 10 latest accessed tabs.
     returnedTabs = [...firstOrderedTabs, ...returnedTabs.filter(t => !firstOrderedTabs.includes(t))]
 
-    /*
-    let miniSearch = new MiniSearch({
-      fields: ['title', 'url'], // fields to index for full-text search
-      storeFields: ['title', 'url', 'id', 'pinned'], // fields to return with search results
-      searchOptions: {
-      boost: { title: 2 },
-      fuzzy: 0.2
-    }
-    })
-    miniSearch.addAll(returnedTabs)
-    const res = miniSearch.search(cmd, { fuzzy: 0.2 })
-    */
-    console.log("Sending back ", returnedTabs.length, " tabs")
+    log("Sending back ", returnedTabs.length, " tabs")
     const message = { 
       data: returnedTabs.map(
         tab => ({
@@ -51,6 +40,9 @@ export function getTabs(port: Port, { command: _cmd }: Command) {
       )
     }
     port.postMessage(message);
+    // pause 100ms, or this end message may be received before the message above
+    await new Promise(res => setTimeout(res,100))
+    port.postMessage({data:"end"});
   })
 }
 
@@ -67,7 +59,7 @@ export function switchToTab(port: Port, { args }: Command) {
     }
   });
 
-  port.postMessage({ data: null });
+  port.postMessage({data:"end"});
 }
 
 export function closeTabs(port: Port, { args }: Command) {
@@ -81,13 +73,14 @@ export function closeTabs(port: Port, { args }: Command) {
 
       if (!tab.id) continue
       if ( tabIds.some(id => `${tab.id}` === id) ) {
-        console.log("found tab to close", tab)
+        log("found tab to close", tab)
         tabToCloseIds.push(tab.id)
       }
     }
 
+    log("closing tabs", tabToCloseIds)
     browser.tabs.remove(tabToCloseIds)
   });
 
-  port.postMessage({ data: null });
+  port.postMessage({data:"end"});
 }

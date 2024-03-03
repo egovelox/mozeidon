@@ -4,12 +4,10 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/egovelox/mozicli/browser/core"
-	"github.com/egovelox/mozicli/ui"
 )
 
 type App struct {
 	browser *core.BrowserService
-	ui      *ui.Ui
 	viper   *viper.Viper
 }
 
@@ -21,7 +19,6 @@ func NewApp() (*App, error) {
 	}
 
 	browser := core.NewBrowserService()
-	ui := ui.Ui{}
 
-	return &App{browser: browser, ui: &ui, viper: viper}, nil
+	return &App{browser: browser, viper: viper}, nil
 }
