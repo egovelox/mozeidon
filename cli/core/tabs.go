@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -12,6 +13,7 @@ import (
 func (a *App) Tabs(query string) {
 	// TODO: handle error
 	tabs, err := a.TabsGet()
+	tabsConfig := a.viper.GetStringMapString("tabs")
 
 	fzfFlags := []string{
 		// Case-insensitive
@@ -28,9 +30,16 @@ func (a *App) Tabs(query string) {
 		"--marker=❌",
 		// fzf use of {+1} : '+' is for one line space-separated, '1' for field 1 i.e tabs.id
 		"--bind=enter:accept-non-empty+become(echo ::switch::{+1})",
-		"--bind=ctrl-p:accept-non-empty+become(echo ::close::{+1})",
-		"--bind=ctrl-o:print-query",
-		`--header= ctrl-p [close], crl-o [open]`,
+		fmt.Sprintf(
+			"--bind=%s:accept-non-empty+become(echo ::close::{+1})",
+			tabsConfig["close_key"],
+		),
+		fmt.Sprintf("--bind=%s:print-query", tabsConfig["open_key"]),
+		fmt.Sprintf(
+			`--header= close [%s], open [%s]`,
+			tabsConfig["close_key"],
+			tabsConfig["open_key"],
+		),
 		"--header-first",
 	}
 	res, err := ChooseTab(&tabs, a.ui, fzfFlags)

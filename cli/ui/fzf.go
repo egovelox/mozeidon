@@ -28,15 +28,11 @@ func (ui *Ui) FzfTmux(
 	if err != nil {
 		return "", err
 	}
-	_, err = io.Copy(stdin, data)
-	//_, err = data.WriteTo(stdin)
-	if err != nil {
-		return "", err
-	}
-	err = stdin.Close()
-	if err != nil {
-		return "", err
-	}
+
+	go func() {
+		io.Copy(stdin, data)
+		stdin.Close()
+	}()
 
 	err = cmd.Start()
 	if err != nil {

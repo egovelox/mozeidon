@@ -9,7 +9,7 @@ import (
 func (a *App) TabsGet() (models.Tabs, error) {
 	result, err := a.browser.Send(
 		models.Command{
-			Command: "match-tabs",
+			Command: "get-tabs",
 		},
 	)
 	if err != nil {

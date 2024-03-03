@@ -1,4 +1,4 @@
-package tabs
+package bookmarks
 
 import (
 	"fmt"
@@ -8,9 +8,9 @@ import (
 	"github.com/egovelox/mozicli/core"
 )
 
-var TabsCmd = &cobra.Command{
-	Use:   "tabs",
-	Short: "Tabs is a palette that contains tabs based commands",
+var BookmarksCmd = &cobra.Command{
+	Use:   "bookmarks",
+	Short: "Bookmarks is a palette that contains bookmarks based commands",
 	Long:  ``,
 	Run: func(_ *cobra.Command, _ []string) {
 		app, err := core.NewApp()
@@ -18,7 +18,7 @@ var TabsCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		app.Tabs("")
+		app.Bookmarks("")
 	},
 }
 

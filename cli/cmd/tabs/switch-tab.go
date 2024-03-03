@@ -11,7 +11,7 @@ var switchTabCmd = &cobra.Command{
 	Short: "Select a tab to switch on",
 	Long:  ``,
 	Run: func(_ *cobra.Command, _ []string) {
-		app := core.NewApp()
+		app, _ := core.NewApp()
 		app.TabsSwitch("")
 	},
 }

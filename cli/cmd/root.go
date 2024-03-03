@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/egovelox/mozicli/cmd/bookmarks"
 	"github.com/egovelox/mozicli/cmd/tabs"
 )
 
@@ -22,6 +23,7 @@ Mozicli is a CLI to control a moz://a firefox instance.
 
 func init() {
 	rootCmd.AddCommand(tabs.TabsCmd)
+	rootCmd.AddCommand(bookmarks.BookmarksCmd)
 }
 func Execute() {
 	err := rootCmd.Execute()

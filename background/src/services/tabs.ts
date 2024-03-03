@@ -1,12 +1,20 @@
 import { Port } from "src/models/port"
-import MiniSearch from "minisearch"
 import { Command } from "src/models/command"
 
 export async function openTab(port: Port, { args }: Command) {
-  await browser.tabs.create({ url: `https://www.google.com/search?q=${args}` })
+  try {
+    const url = new URL(args!)
+    console.log("open tab")
+    await browser.tabs.create({ url: url.toString() })
+  } catch(_) {
+    // if not an url, use google
+    console.log("open google tab")
+    await browser.tabs.create({ url: `https://www.google.com/search?q=${args}` })
+  }
   port.postMessage({ data: null });
 }
-export function getTabs(port: Port, { command: cmd }: Command) {
+
+export function getTabs(port: Port, { command: _cmd }: Command) {
   browser.tabs.query({ currentWindow: true })
   .then((tabs) => {
     let returnedTabs = tabs.slice()
@@ -17,6 +25,7 @@ export function getTabs(port: Port, { command: cmd }: Command) {
     // returnedTabs first 5 items are the 5 latest accessed tabs.
     returnedTabs = [...firstOrderedTabs, ...returnedTabs.filter(t => !firstOrderedTabs.includes(t))]
 
+    /*
     let miniSearch = new MiniSearch({
       fields: ['title', 'url'], // fields to index for full-text search
       storeFields: ['title', 'url', 'id', 'pinned'], // fields to return with search results
@@ -27,8 +36,8 @@ export function getTabs(port: Port, { command: cmd }: Command) {
     })
     miniSearch.addAll(returnedTabs)
     const res = miniSearch.search(cmd, { fuzzy: 0.2 })
-    console.log("tabs", returnedTabs)
-    console.log("matching tabs", res)
+    */
+    console.log("Sending back ", returnedTabs.length, " tabs")
     const message = { 
       data: returnedTabs.map(
         tab => ({
@@ -51,7 +60,7 @@ export function switchToTab(port: Port, { args }: Command) {
 
     for (let tab of tabs) {
       if (tab.id == args) {
-        console.log("found tab", tab)
+        console.log("found tab to switch to", tab)
         browser.tabs.update(tab.id!, {active: true});
         break
       }

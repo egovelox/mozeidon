@@ -6,7 +6,7 @@ import { closeTabs, getTabs, openTab, switchToTab } from "./services/tabs";
 export async function handler(port: Port, cmd: Command) {
 
   switch (cmd.command) {
-    case "match-tabs":
+    case "get-tabs":
       return getTabs(port, cmd)
     case "switch-tab":
       return switchToTab(port, cmd)
@@ -14,7 +14,7 @@ export async function handler(port: Port, cmd: Command) {
       return closeTabs(port, cmd)
     case "open-tab":
       return await openTab(port, cmd)
-    case "bookmarks":
+    case "get-bookmarks":
       return getRecentBookmarks(port, cmd)
     default:
       console.error("Cannot handle unknown command: ", cmd.command)

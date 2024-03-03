@@ -11,7 +11,7 @@ var closeTabsCmd = &cobra.Command{
 	Short: "Select tabs to close",
 	Long:  ``,
 	Run: func(_ *cobra.Command, _ []string) {
-		app := core.NewApp()
+		app, _ := core.NewApp()
 		app.TabsClose("")
 	},
 }

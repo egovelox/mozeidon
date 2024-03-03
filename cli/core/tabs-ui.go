@@ -33,7 +33,11 @@ func ChooseTab(
 	reader := strings.NewReader(strings.Join(uiTabs, ""))
 
 	// TODO: handle error
-	res, _ := ui.FzfTmux(reader, fzfFlags)
+	res, err := ui.FzfTmux(reader, fzfFlags)
+
+	if err != nil {
+		return "", err
+	}
 
 	return res, nil
 }

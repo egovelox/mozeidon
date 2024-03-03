@@ -1,32 +1,43 @@
 import { Command } from "src/models/command"
 import { Port } from "src/models/port"
+//import MiniSearch from "minisearch"
 
-export function getRecentBookmarks(port: Port, { command: cmd }: Command) {
-    const sp = cmd.split('*_f_t_b_*')
-    const count = sp.length > 1 ? Number.parseInt(sp[1]!) : 20
+export function getRecentBookmarks(port: Port, { command: _cmd }: Command) {
 
-    // note: it will break if count > 36 
-    // (have to fix node-ipc code, in order to support larger data)
-    // but no more with golang : tested with 500 !
-    browser.bookmarks.getRecent(count)
-    .then(async (items) => {
-      const bms = []
-      for (const item of items) {
-        if (!item.url || item.type !== 'bookmark') continue
+  browser.bookmarks.getRecent(10000)
+  .then(async (items) => {
+    const start = Date.now()
+    const chunkSize = 300;
+    const chunks = [];
+    for (let i = 0; i < items.length; i += chunkSize) {
+      const chunk = items.slice(i, i + chunkSize);
+      chunks.push(processChunk(chunk));
+    }
 
-        const parentTitles = await getBmParentTitles(item)
+    let bms: {}[] = []
+    const processed = await Promise.all(chunks)
+    processed.forEach(res => { bms = bms.concat(res) })
 
-        bms.push({
-          d: item.dateAdded,
-          t: item.title,
-          u: item.url,
-          p: parentTitles.join(","),
-        })
-      }
+    const end = Date.now()
+    console.log(`sending back ${bms.length} bookmarks in ${end- start}`)
+    port.postMessage({ data: bms });
+  })
+}
 
-      console.log(bms)
-      port.postMessage({ data: bms });
+async function processChunk(items: browser.bookmarks.BookmarkTreeNode[]) {
+  const bms = []
+  for (const item of items) {
+    if (!item.url || item.type !== 'bookmark') continue
+
+    const parentTitles = await getBmParentTitles(item)
+
+    bms.push({
+      title: item.title,
+      url: item.url,
+      parent: parentTitles.join(","),
     })
+  }
+  return bms
 }
 
 async function getBmParentTitles(bm: browser.bookmarks.BookmarkTreeNode) {
