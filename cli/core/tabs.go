@@ -8,7 +8,7 @@ import (
 	"github.com/egovelox/mozicli/browser/core/models"
 )
 
-func (a *App) Tabs(query string) {
+func (a *App) Tabs(query string, recentlyClosed bool) {
 	// TODO: handle error
 	tabsConfig := a.viper.GetStringMapString("tabs")
 
@@ -38,8 +38,10 @@ func (a *App) Tabs(query string) {
 			tabsConfig["fzf_open_key"],
 		),
 		"--header-first",
+		// omit windowId and tabId cf tabs-ui.go
+		"--with-nth=2..",
 	}
-	res, err := a.ChooseTab(a.TabsGet(), fzfFlags)
+	res, err := a.ChooseTab(a.TabsGet(recentlyClosed), fzfFlags)
 
 	if err != nil {
 		// TODO: find a way to log a useful error
@@ -54,7 +56,7 @@ func (a *App) Tabs(query string) {
 		if len(res) > 0 {
 			<-a.browser.Send(
 				models.Command{
-					Command: "open-tab",
+					Command: "new-tab",
 					Args:    res,
 				},
 			)

@@ -34,8 +34,9 @@ func (_ TabsPrinter) Print(stdin io.WriteCloser, tabs <-chan models.Tabs) {
 		noneColor := "\033[0m"
 		for _, item := range receivedTabs.Items {
 			str := fmt.Sprintf(
-				"%4d  %s %s %s %s %s \n",
-				item.Id,
+				"%s  %s %s %s %s %s \n",
+				// this field will be hidden by fzf --with-nth
+				fmt.Sprintf("%d:%d", item.WindowId, item.Id),
 				getTabIcon(item.Pinned),
 				darkGreenColor,
 				shortString(item.Domain, 30),

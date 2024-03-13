@@ -2,21 +2,62 @@ import { Port } from "src/models/port"
 import { Command } from "src/models/command"
 import { log } from "../logger"
 
-export async function openTab(port: Port, { args }: Command) {
+export async function newTab(port: Port, { args }: Command) {
+  if (!args) { 
+    log("open empty tab")
+    await browser.tabs.create({})
+    return port.postMessage({data:"end"}) 
+  }
+
   try {
-    const url = new URL(args!)
-    log("open tab")
+    const url = new URL(args)
+    log("open tab: ", url)
     await browser.tabs.create({ url: url.toString() })
   } catch(_) {
     // if not an url, use google
+    const url = `https://www.google.com/search?q=${args}`
     log("open google tab")
-    await browser.tabs.create({ url: `https://www.google.com/search?q=${args}` })
+    await browser.tabs.create({ url })
   }
   port.postMessage({data:"end"});
 }
 
+export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
+  browser.sessions.getRecentlyClosed()
+    .then(async (sessions: browser.sessions.Session[]) => {
+      const tabs = 
+        sessions
+        .sort((s1, s2) => s2.lastModified - s1.lastModified)
+        .filter((session) => session.tab)
+        .map(i => i.tab)
+        .filter((t): t is browser.tabs.Tab => !!t)
+
+      log("Sending back ", tabs.length, " recently closed tabs")
+      const message = { 
+        data: tabs.map(
+          tab => ({
+            id: tab.lastAccessed ?? Math.floor(Math.random() * 1000),
+            windowId: tab.windowId,
+            title: tab.title,
+            pinned: tab.pinned,
+            url: tab.url,
+            active: tab.active,
+            domain: tab.url
+              ? new URL(tab.url).hostname.replace("www.", "")
+              : ''
+          })
+        )
+      }
+      port.postMessage(message);
+      // pause 100ms, or this end message may be received before the message above
+      await new Promise(res => setTimeout(res,100))
+      port.postMessage({data:"end"});
+    })
+}
+
+
 export function getTabs(port: Port, { command: _cmd }: Command) {
-  browser.tabs.query({ currentWindow: true })
+  browser.tabs.query({})
   .then(async (tabs) => {
     let returnedTabs = tabs.slice()
 
@@ -31,8 +72,11 @@ export function getTabs(port: Port, { command: _cmd }: Command) {
       data: returnedTabs.map(
         tab => ({
           id: tab.id,
+          windowId: tab.windowId,
           title: tab.title,
           pinned: tab.pinned,
+          url: tab.url,
+          active: tab.active,
           domain: tab.url
             ? new URL(tab.url).hostname.replace("www.", "")
             : ''
@@ -47,12 +91,31 @@ export function getTabs(port: Port, { command: _cmd }: Command) {
 }
 
 export function switchToTab(port: Port, { args }: Command) {
-  browser.tabs.query({ currentWindow: true })
+  if (!args) { 
+    log("invalid args, received: ", args)
+    return port.postMessage({data:"end"}) 
+  }
+
+  let windowId:number, tabId: number;
+  const ids = args.split(":")
+  if (ids.length !== 2) {
+    log("invalid args, cannot find both window and tab ids. Received: ", args)
+    return port.postMessage({data:"end"})
+  }
+  try {
+    windowId = Number.parseInt(ids[0])
+    tabId = Number.parseInt(ids[1])
+  } catch(e) {
+    log("invalid args, cannot parth both window and tab ids as int", args)
+    return port.postMessage({data:"end"})
+  }
+
+  browser.tabs.query({ windowId })
   .then((tabs) => {
 
     for (let tab of tabs) {
-      if (tab.id == args) {
-        console.log("found tab to switch to", tab)
+      if (tab.id == tabId) {
+        log("found tab to switch to", tab)
         browser.tabs.update(tab.id!, {active: true});
         break
       }
@@ -63,16 +126,24 @@ export function switchToTab(port: Port, { args }: Command) {
 }
 
 export function closeTabs(port: Port, { args }: Command) {
-  browser.tabs.query({ currentWindow: true })
+  if (!args) { 
+    log("invalid args, received: ", args)
+    return port.postMessage({data:"end"}) 
+  }
+
+  const tabToCloseIds: number[] = []
+
+  /* 
+   * array of strings, each one should have following format: 
+   * `{windowId}:{tabId}` 
+  */
+  const tabIds = args.split(',')
+
+  browser.tabs.query({})
   .then((tabs) => {
-
-    const tabToCloseIds: number[] = []
-    const tabIds = args!.split(',')
-
     for (let tab of tabs) {
-
       if (!tab.id) continue
-      if ( tabIds.some(id => `${tab.id}` === id) ) {
+      if ( tabIds.some(id => `${tab.windowId}:${tab.id}` === id) ) {
         log("found tab to close", tab)
         tabToCloseIds.push(tab.id)
       }

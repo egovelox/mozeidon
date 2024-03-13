@@ -15,15 +15,17 @@ import (
 
 func main() {
 	/*
-			   Listen to, and handle incoming ipc message :
-		    - forward each incoming message to the web-browser
-		    - send back each browser response as outgoing ipc message
+			  Listen to, and handle incoming ipc message :
+			 - forward each incoming message to the web-browser
+			 - send back each browser response as outgoing ipc message
+
+		   It acts like a web-browser proxy
 	*/
 
-	proxy("mozicli_host")
+	webBrowserProxy("mozeidon_native_app")
 }
 
-func proxy(ipcName string) {
+func webBrowserProxy(ipcName string) {
 	ipcConfig := &ipc.ServerConfig{
 
 		Encryption:        true, // allows encryption to be switched off (bool - default is true)

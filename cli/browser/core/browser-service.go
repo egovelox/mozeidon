@@ -10,5 +10,5 @@ type BrowserService struct {
 }
 
 func NewBrowserService() *BrowserService {
-	return &BrowserService{infra.NewIpcClient("mozicli_host")}
+	return &BrowserService{infra.NewIpcClient("mozeidon_native_app")}
 }

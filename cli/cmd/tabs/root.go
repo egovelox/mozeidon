@@ -8,6 +8,9 @@ import (
 	"github.com/egovelox/mozicli/core"
 )
 
+var json bool
+var recentlyClosed bool
+
 var TabsCmd = &cobra.Command{
 	Use:   "tabs",
 	Short: "Tabs is a palette that contains tabs based commands",
@@ -18,9 +21,20 @@ var TabsCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		app.Tabs("")
+		if json {
+			app.TabsRaw("", recentlyClosed)
+		} else {
+			app.Tabs("", recentlyClosed)
+		}
 	},
 }
 
 func init() {
+	TabsCmd.Flags().BoolVarP(&json, "json", "j", false, "json output")
+	TabsCmd.Flags().
+		BoolVarP(&recentlyClosed, "closed", "c", false, "only recently-closed tabs")
+
+	TabsCmd.AddCommand(SwitchTabCmd)
+	TabsCmd.AddCommand(CloseTabCmd)
+	TabsCmd.AddCommand(NewTabCmd)
 }
