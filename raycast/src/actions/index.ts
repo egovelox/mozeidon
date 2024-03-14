@@ -59,46 +59,27 @@ export async function openHistoryTab(url: string): Promise<boolean | string> {
 
 export async function openNewTab(queryText: string | null | undefined): Promise<void> {
   //await checkAppInstalled()
-  execSync(`${getPreferenceValues().mozicli} tabs new ${queryText}`)
+  execSync(`${getPreferenceValues().mozicli} tabs new -- ${queryText}`);
   await runAppleScript(`
     tell application "Firefox"
       activate
-    end tell
-  `)
-}
-
-export async function setActiveTab(tab: Tab): Promise<void> {
-  await runAppleScript(`
-    tell application "Firefox"
-      activate
-      repeat with w from 1 to count of windows
-        set startTab to name of window 1
-        repeat
-            if name of window 1 contains "${tab.title}" then 
-              exit repeat
-            else
-              tell application "System Events" to key code 48 using control down
-            end if
-            if name of window 1 is startTab then exit repeat
-        end repeat
-      end repeat
     end tell
   `);
 }
 
 export async function switchTab(tab: Tab): Promise<void> {
   //await checkAppInstalled()
-  execSync(`${getPreferenceValues().mozicli} tabs switch ${tab.windowId}:${tab.id}`)
+  execSync(`${getPreferenceValues().mozicli} tabs switch ${tab.windowId}:${tab.id}`);
   await runAppleScript(`
     tell application "Firefox"
       activate
     end tell
-`)
+`);
 }
 
 export async function closeTab(tab: Tab): Promise<void> {
   //await checkAppInstalled()
-  execSync(`${getPreferenceValues().mozicli} tabs close ${tab.windowId}:${tab.id}`)
+  execSync(`${getPreferenceValues().mozicli} tabs close ${tab.windowId}:${tab.id}`);
 }
 
 export async function switchTabWithoutMozicli(tab: Tab): Promise<void> {
@@ -107,8 +88,8 @@ export async function switchTabWithoutMozicli(tab: Tab): Promise<void> {
       tell application "Firefox"
         activate  
       end tell
-    `)
-  } else
+    `);
+  }
   // Cmd l
   // Cmd a
   // Backspace Backspace
@@ -116,7 +97,8 @@ export async function switchTabWithoutMozicli(tab: Tab): Promise<void> {
   // arrow down
   // enter
   // F6
-  await runAppleScript(`
+  else
+    await runAppleScript(`
     tell application "Firefox"
       activate  
     tell application "System Events" to keystroke "l" using command down

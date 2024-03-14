@@ -27,7 +27,7 @@ export function useHistorySearch(query: string | undefined): SearchResult<Histor
   if (!existsSync(dbPath)) {
     return { data: [], isLoading: false, errorView: <NotInstalledError /> };
   }
-  console.log("loading SQL")
+  console.log("loading SQL");
   const { isLoading, data, permissionView } = useSQL<HistoryEntry>(dbPath, inQuery);
   return { data, isLoading, errorView: permissionView as ReactElement };
 }

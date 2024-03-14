@@ -1,6 +1,7 @@
 import { Image } from "@raycast/api";
 import { getFavicon } from "@raycast/utils";
-import { ReactElement } from "react";
+import { ReactElement, ReactNode } from "react";
+import { TAB_TYPE } from "../constants";
 
 export interface Preferences {
   readonly searchEngine: string;
@@ -9,6 +10,7 @@ export interface Preferences {
 export class Tab {
   constructor(
     public readonly id: number,
+    public readonly pinned: boolean,
     public readonly windowId: number,
     public readonly title: string,
     public readonly url: string,
@@ -21,7 +23,7 @@ export class Tab {
   }
 
   googleFavicon(): Image.ImageLike {
-    return getFavicon(this.url);
+    return getFavicon(this.url, { mask: Image.Mask.RoundedRectangle });
   }
 }
 
@@ -35,6 +37,8 @@ export interface MozeidonTab {
   active: boolean;
 }
 
+export interface TabState { type: TAB_TYPE; tabs: Tab[] };
+
 export interface HistoryEntry {
   id: number;
   url: string;
@@ -45,6 +49,12 @@ export interface HistoryEntry {
 export interface SearchResult<T> {
   data?: T[];
   errorView?: ReactElement;
+  isLoading: boolean;
+}
+
+export interface SearchResult2<T> {
+  data: T;
+  errorView?: ReactNode;
   isLoading: boolean;
 }
 

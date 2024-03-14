@@ -1,5 +1,8 @@
-export const TABS_FALLBACK = `{"data":[]}`
-export const TAB_TYPES = ["open tabs", "recently closed"] as const
+export const TABS_FALLBACK = `{"data":[]}`;
+export enum TAB_TYPE {
+  OPEN_TABS = "open tabs",
+  RECENTLY_CLOSED = "recently closed",
+}
 export const SEARCH_ENGINE: { [key: string]: string } = {
   google: `https://google.com/search?q=`,
   bing: `https://www.bing.com/search?q=`,
