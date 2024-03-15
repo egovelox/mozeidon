@@ -33,7 +33,7 @@ func (a *App) Bookmarks(query string) {
 
 	a.browser.Send(
 		models.Command{
-			Command: "open-tab",
+			Command: "new-tab",
 			Args:    url,
 		},
 	)
