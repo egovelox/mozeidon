@@ -1,12 +1,13 @@
 import { Port } from "src/models/port"
-import { Command } from "src/models/command"
+import { Command } from "../models/command"
 import { log } from "../logger"
+import { Response } from "../models/response"
 
 export async function newTab(port: Port, { args }: Command) {
   if (!args) { 
     log("open empty tab")
     await browser.tabs.create({})
-    return port.postMessage({data:"end"}) 
+    return port.postMessage(Response.end()) 
   }
 
   try {
@@ -19,22 +20,21 @@ export async function newTab(port: Port, { args }: Command) {
     log("open google tab")
     await browser.tabs.create({ url })
   }
-  port.postMessage({data:"end"});
+  port.postMessage(Response.end());
 }
 
 export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
   browser.sessions.getRecentlyClosed()
     .then(async (sessions: browser.sessions.Session[]) => {
-      const tabs = 
+      const sessionTabs = 
         sessions
         .sort((s1, s2) => s2.lastModified - s1.lastModified)
         .filter((session) => session.tab)
         .map(i => i.tab)
         .filter((t): t is browser.tabs.Tab => !!t)
 
-      log("Sending back ", tabs.length, " recently closed tabs")
-      const message = { 
-        data: tabs.map(
+      log("Sending back ", sessionTabs.length, " recently closed tabs")
+      const tabs = sessionTabs.map(
           tab => ({
             id: tab.lastAccessed ?? Math.floor(Math.random() * 1000),
             windowId: tab.windowId,
@@ -47,29 +47,27 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
               : ''
           })
         )
-      }
-      port.postMessage(message);
+      port.postMessage(Response.data(tabs));
       // pause 100ms, or this end message may be received before the message above
       await new Promise(res => setTimeout(res,100))
-      port.postMessage({data:"end"});
+      port.postMessage(Response.end());
     })
 }
 
 
 export function getTabs(port: Port, { command: _cmd }: Command) {
   browser.tabs.query({})
-  .then(async (tabs) => {
-    let returnedTabs = tabs.slice()
+  .then(async (browserTabs) => {
+    let returnedTabs = browserTabs.slice()
 
-    tabs.sort((a,b) => b.lastAccessed! - a.lastAccessed!)
-    const firstOrderedTabs = tabs.slice(0,10)
+    browserTabs.sort((a,b) => b.lastAccessed! - a.lastAccessed!)
+    const firstOrderedTabs = browserTabs.slice(0,10)
 
     // returnedTabs first 10 items are the 10 latest accessed tabs.
     returnedTabs = [...firstOrderedTabs, ...returnedTabs.filter(t => !firstOrderedTabs.includes(t))]
 
     log("Sending back ", returnedTabs.length, " tabs")
-    const message = { 
-      data: returnedTabs.map(
+    const tabs = returnedTabs.map(
         tab => ({
           id: tab.id,
           windowId: tab.windowId,
@@ -82,32 +80,31 @@ export function getTabs(port: Port, { command: _cmd }: Command) {
             : ''
         })
       )
-    }
-    port.postMessage(message);
+    port.postMessage(Response.data(tabs));
     // pause 100ms, or this end message may be received before the message above
     await new Promise(res => setTimeout(res,100))
-    port.postMessage({data:"end"});
+    port.postMessage(Response.end());
   })
 }
 
 export function switchToTab(port: Port, { args }: Command) {
   if (!args) { 
     log("invalid args, received: ", args)
-    return port.postMessage({data:"end"}) 
+    return port.postMessage(Response.end()) 
   }
 
   let windowId:number, tabId: number;
   const ids = args.split(":")
   if (ids.length !== 2) {
     log("invalid args, cannot find both window and tab ids. Received: ", args)
-    return port.postMessage({data:"end"})
+    return port.postMessage(Response.end())
   }
   try {
     windowId = Number.parseInt(ids[0])
     tabId = Number.parseInt(ids[1])
   } catch(e) {
     log("invalid args, cannot parth both window and tab ids as int", args)
-    return port.postMessage({data:"end"})
+    return port.postMessage(Response.end())
   }
 
   browser.tabs.query({ windowId })
@@ -122,13 +119,13 @@ export function switchToTab(port: Port, { args }: Command) {
     }
   });
 
-  port.postMessage({data:"end"});
+  port.postMessage(Response.end());
 }
 
 export function closeTabs(port: Port, { args }: Command) {
   if (!args) { 
     log("invalid args, received: ", args)
-    return port.postMessage({data:"end"}) 
+    return port.postMessage(Response.end()) 
   }
 
   const tabToCloseIds: number[] = []
@@ -153,5 +150,5 @@ export function closeTabs(port: Port, { args }: Command) {
     browser.tabs.remove(tabToCloseIds)
   });
 
-  port.postMessage({data:"end"});
+  port.postMessage(Response.end());
 }

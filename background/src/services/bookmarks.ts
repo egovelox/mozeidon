@@ -1,8 +1,10 @@
+import { BOOKMARK_TYPE, ROOT_BOOKMARK_ID } from "../constants";
 import { log } from "../logger";
-import { Command } from "src/models/command"
+import { Command } from "../models/command"
 import { Port } from "src/models/port"
+import { Response } from "../models/response";
 
-export function getRecentBookmarks(port: Port, { command: _cmd }: Command) {
+export function getBookmarks(port: Port, { command: _cmd }: Command) {
 
   browser.bookmarks.getRecent(50000)
   .then(async (bookmarks) => {
@@ -19,21 +21,21 @@ export function getRecentBookmarks(port: Port, { command: _cmd }: Command) {
     // no parallelism, maintain order of bookmarks
     for (const chunk of chunks) {
       const bms = await processChunk(chunk)
-      port.postMessage({data: bms})
+      port.postMessage(Response.data(bms))
     }
 
     const endTime = Date.now()
     log(`sending back bookmarks in ${endTime - startTime} ms`)
     // pause 100ms, or this end message may be received before the last chunk
     await new Promise(res => setTimeout(res, 100))
-    port.postMessage({data:"end"});
+    port.postMessage(Response.end());
   })
 }
 
 async function processChunk(items: browser.bookmarks.BookmarkTreeNode[]) {
   const bms = []
   for (const item of items) {
-    if (!item.url || item.type !== 'bookmark') continue
+    if (!item.url || item.type !== BOOKMARK_TYPE) continue
 
     const parentTitles = await getBmParentTitles(item)
 
@@ -48,7 +50,7 @@ async function processChunk(items: browser.bookmarks.BookmarkTreeNode[]) {
 }
 
 async function getBmParentTitles(bm: browser.bookmarks.BookmarkTreeNode) {
-  let shouldGetParent = bm.parentId !== "toolbar_____"
+  let shouldGetParent = bm.parentId !== ROOT_BOOKMARK_ID
   let current = bm
 
   let parentTitles = []
@@ -62,7 +64,7 @@ async function getBmParentTitles(bm: browser.bookmarks.BookmarkTreeNode) {
       if (parentBm.length && parentBm[0].title) {
         parentTitles.push(parentBm[0].title)
         current = parentBm[0]
-        shouldGetParent = parentBm[0].parentId !== "toolbar_____"
+        shouldGetParent = parentBm[0].parentId !== ROOT_BOOKMARK_ID
       } else shouldGetParent = false
 
     } else break

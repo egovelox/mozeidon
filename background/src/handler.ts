@@ -1,26 +1,26 @@
-import { Command } from "./models/command";
+import { Command, CommandName } from "./models/command";
 import { Port } from "./models/port";
-import { getRecentBookmarks } from "./services/bookmarks";
+import { getBookmarks } from "./services/bookmarks";
 import { closeTabs, getRecentlyClosedTabs, getTabs, newTab, switchToTab } from "./services/tabs";
 
 export async function handler(port: Port, cmd: Command) {
 
   switch (cmd.command) {
-    case "get-tabs":
+    case CommandName.GET_TABS:
       return getTabs(port, cmd)
-    case "get-recently-closed-tabs":
+    case CommandName.GET_RECENTLY_CLOSED_TABS:
       return getRecentlyClosedTabs(port, cmd)
-    case "switch-tab":
+    case CommandName.SWITCH_TAB:
       return switchToTab(port, cmd)
-    case "close-tabs":
+    case CommandName.CLOSE_TABS:
       return closeTabs(port, cmd)
-    case "new-tab":
+    case CommandName.NEW_TAB:
       return await newTab(port, cmd)
-    case "get-bookmarks":
-      return getRecentBookmarks(port, cmd)
-    default:
-      console.error("Cannot handle unknown command: ", cmd.command)
+    case CommandName.GET_BOOKMARKS:
+      return getBookmarks(port, cmd)
+    default: console.error("Cannot handle unknown command: ", cmd.command)
   }
+  
 
 }
 
