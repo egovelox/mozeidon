@@ -6,7 +6,7 @@ import { MOZEIDON, TABS_FALLBACK, TAB_TYPE } from "../constants";
 
 export async function openNewTab(queryText: string | null | undefined): Promise<void> {
   //await checkAppInstalled()
-  execSync(`${MOZEIDON} tabs new -- ${queryText}`);
+  execSync(`${MOZEIDON} tabs new -- "${queryText}"`);
   await openFirefox()
 }
 
