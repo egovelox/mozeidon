@@ -1,6 +1,6 @@
 import { Image } from "@raycast/api";
 import { getFavicon } from "@raycast/utils";
-import { ReactElement, ReactNode } from "react";
+import { ReactNode } from "react";
 import { TAB_TYPE } from "../constants";
 
 export interface Preferences {
@@ -54,12 +54,6 @@ export interface HistoryEntry {
 }
 
 export interface SearchResult<T> {
-  data?: T[];
-  errorView?: ReactElement;
-  isLoading: boolean;
-}
-
-export interface SearchResult2<T> {
   data: T;
   errorView?: ReactNode;
   isLoading: boolean;

@@ -1,130 +1,79 @@
-import { closeMainWindow, getPreferenceValues, popToRoot } from "@raycast/api";
+import * as readline from "node:readline";
 import { runAppleScript } from "run-applescript";
-import { Preferences, Tab } from "../interfaces";
-import { NOT_INSTALLED_MESSAGE, SEARCH_ENGINE } from "../constants";
-import { execSync } from "child_process";
-
-export async function openNewTabWithoutMozicli(queryText: string | null | undefined): Promise<boolean | string> {
-  popToRoot();
-  closeMainWindow({ clearRootSearch: true });
-
-  const script = `
-    tell application "Firefox"
-      activate
-      repeat while not frontmost
-        delay 0.1
-      end repeat
-      tell application "System Events"
-        keystroke "t" using {command down}
-        ${
-          queryText
-            ? `keystroke "l" using {command down}
-           keystroke "a" using {command down}
-           key code 51
-           keystroke "${SEARCH_ENGINE[getPreferenceValues<Preferences>().searchEngine.toLowerCase()]}${queryText}"
-           key code 36`
-            : ""
-        }
-      end tell
-    end tell
-  `;
-  await checkAppInstalled();
-
-  return await runAppleScript(script);
-}
-
-export async function openHistoryTab(url: string): Promise<boolean | string> {
-  popToRoot();
-  closeMainWindow({ clearRootSearch: true });
-
-  const script = `
-    tell application "Firefox"
-      activate
-      repeat while not frontmost
-        delay 0.1
-      end repeat
-      tell application "System Events"
-        keystroke "t" using {command down}
-        keystroke "l" using {command down}
-        keystroke "a" using {command down}
-        key code 51
-        keystroke "${url}"
-        key code 36
-      end tell
-    end tell
-  `;
-
-  return await runAppleScript(script);
-}
+import { MozeidonBookmark, MozeidonTab, Tab, TabState } from "../interfaces";
+import { execSync, spawn } from "child_process";
+import { MOZEIDON, TABS_FALLBACK, TAB_TYPE } from "../constants";
 
 export async function openNewTab(queryText: string | null | undefined): Promise<void> {
   //await checkAppInstalled()
-  execSync(`${getPreferenceValues().mozicli} tabs new -- ${queryText}`);
-  await runAppleScript(`
+  execSync(`${MOZEIDON} tabs new -- ${queryText}`);
+  await openFirefox()
+}
+
+export async function switchTab(tab: Tab): Promise<void> {
+  //await checkAppInstalled()
+  execSync(`${MOZEIDON} tabs switch ${tab.windowId}:${tab.id}`);
+  await openFirefox()
+}
+
+export async function closeTab(tab: Tab): Promise<void> {
+  //await checkAppInstalled()
+  execSync(`${MOZEIDON} tabs close ${tab.windowId}:${tab.id}`);
+}
+
+export function fetchOpenTabs(): TabState {
+  console.log("...fetching open tabs");
+  const data = execSync(`${MOZEIDON} tabs --json`);
+  const parsedTabs: { data: MozeidonTab[] } = JSON.parse(data.toString() || TABS_FALLBACK);
+  return {
+    type: TAB_TYPE.OPENED_TABS,
+    tabs: parsedTabs.data.map(
+      (mozTab) =>
+        new Tab(mozTab.id.toString(), mozTab.pinned, mozTab.windowId, mozTab.title, mozTab.url, mozTab.domain, mozTab.active)
+    ),
+  };
+}
+
+export function fetchRecentlyClosedTabs(): TabState {
+  console.log("...fetching recently closed tabs");
+  const data = execSync(`${MOZEIDON} tabs --json --closed`);
+  const parsedTabs: { data: MozeidonTab[] } = JSON.parse(data.toString() || TABS_FALLBACK);
+  return {
+    type: TAB_TYPE.RECENTLY_CLOSED,
+    tabs: parsedTabs.data.map(
+      (mozTab) =>
+        new Tab(mozTab.id.toString(), mozTab.pinned, mozTab.windowId, mozTab.title, mozTab.url, mozTab.domain, mozTab.active)
+    ),
+  };
+}
+
+export async function* getBookmarksChunks() {
+  //await checkAppInstalled()
+  const command = spawn(
+    `${MOZEIDON} bookmarks --json`,
+    { shell: true }
+  );
+  const chunks = readline.createInterface({ input: command.stdout });
+  for await (const chunk of chunks) {
+    const { data: parsedBookmarks }: { data: MozeidonBookmark[] } = JSON.parse(chunk);
+    console.log("fetching bookmark chunk")
+    yield parsedBookmarks.map(
+      (mozBookmark) => 
+        new Tab(mozBookmark.id, false, 0, mozBookmark.title, mozBookmark.url, mozBookmark.parent, false)
+    )
+  }
+}
+
+async function openFirefox() {
+  return runAppleScript(`
     tell application "Firefox"
       activate
     end tell
   `);
 }
 
-export async function switchTab(tab: Tab): Promise<void> {
-  //await checkAppInstalled()
-  execSync(`${getPreferenceValues().mozicli} tabs switch ${tab.windowId}:${tab.id}`);
-  await runAppleScript(`
-    tell application "Firefox"
-      activate
-    end tell
-`);
-}
-
-export async function closeTab(tab: Tab): Promise<void> {
-  //await checkAppInstalled()
-  execSync(`${getPreferenceValues().mozicli} tabs close ${tab.windowId}:${tab.id}`);
-}
-
-export async function switchTabWithoutMozicli(tab: Tab): Promise<void> {
-  if (tab.active) {
-    await runAppleScript(`
-      tell application "Firefox"
-        activate  
-      end tell
-    `);
-  }
-  // Cmd l
-  // Cmd a
-  // Backspace Backspace
-  // % tab.title
-  // arrow down
-  // enter
-  // F6
-  else
-    await runAppleScript(`
-    tell application "Firefox"
-      activate  
-    tell application "System Events" to keystroke "l" using command down
-    delay 0.01
-    tell application "System Events" to keystroke "a" using command down
-    delay 0.01
-    tell application "System Events" to key code 51
-    delay 0.01
-    tell application "System Events" to key code 51
-    delay 0.01
-    tell application "System Events" to keystroke "% "
-    delay 0.01
-    tell application "System Events" to keystroke "${tab.url}"
-
-    delay 0.5
-    tell application "System Events" to key code 125
-    delay 0.1
-    tell application "System Events" to key code 36
-
-    tell application "System Events" to key code 63
-    delay 0.1
-    tell application "System Events" to key code 97
-    end tell
-`);
-}
-
+/*
+import { NOT_INSTALLED_MESSAGE } from "../constants";
 const checkAppInstalled = async () => {
   const appInstalled = await runAppleScript(`
 set isInstalled to false
@@ -138,3 +87,4 @@ return isInstalled`);
     throw new Error(NOT_INSTALLED_MESSAGE);
   }
 };
+*/

@@ -1,4 +1,3 @@
-export * from "./error";
-export * from "./FirefoxActions";
-export * from "./FirefoxListEntries";
+export * from "./TabActions";
+export * from "./TabList";
 export * from "./TabTypeDropDown";

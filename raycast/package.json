@@ -14,73 +14,50 @@
   "license": "MIT",
   "preferences": [
     {
-      "name": "mozicli",
+      "name": "mozeidon",
       "type": "textfield",
       "required": true,
       "title": "Mozeidon command file-path",
       "description": "The command file-path of mozeidon",
       "placeholder": "e.g /opt/homebrew/bin/mozeidon"
+    },
+    {
+      "name": "searchEngine",
+      "type": "dropdown",
+      "required": false,
+      "title": "Search Engine",
+      "description": "Search Engine for query (default: Google).",
+      "default": "Google",
+      "data": [
+        {
+          "title": "Google",
+          "value": "Google"
+        },
+        {
+          "title": "DuckDuckGo",
+          "value": "DuckDuckGo"
+        },
+        {
+          "title": "Bing",
+          "value": "Bing"
+        },
+        {
+          "title": "Baidu",
+          "value": "Baidu"
+        },
+        {
+          "title": "Brave",
+          "value": "Brave"
+        }
+      ]
     }
   ],
   "commands": [
     {
-      "name": "new-tab",
-      "title": "New Tab",
-      "subtitle": "Mozilla Firefox",
-      "description": "Open a new Mozilla Firefox tab.",
-      "mode": "view",
-      "preferences": [
-        {
-          "name": "searchEngine",
-          "type": "dropdown",
-          "required": false,
-          "title": "Search Engine",
-          "description": "Search Engine for query (default: Google).",
-          "default": "Google",
-          "data": [
-            {
-              "title": "Google",
-              "value": "Google"
-            },
-            {
-              "title": "DuckDuckGo",
-              "value": "DuckDuckGo"
-            },
-            {
-              "title": "Bing",
-              "value": "Bing"
-            },
-            {
-              "title": "Baidu",
-              "value": "Baidu"
-            },
-            {
-              "title": "Brave",
-              "value": "Brave"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "search-history",
-      "title": "Search History",
-      "subtitle": "Mozilla Firefox",
-      "description": "Search browser history.",
-      "mode": "view"
-    },
-    {
-      "name": "search-bookmarks",
-      "title": "Search Bookmarks",
-      "subtitle": "Mozilla Firefox",
-      "description": "Search browser bookmarks.",
-      "mode": "view"
-    },
-    {
-      "name": "search-open-tabs",
-      "title": "Search Open Tabs",
-      "subtitle": "Mozilla Firefox",
-      "description": "Search open tabs.",
+      "name": "mozeidon",
+      "title": "Mozeidon",
+      "subtitle": "Mozilla Firefox add-on",
+      "description": "Search and switch to opened tabs, recently-closed, bookmarks, etc",
       "mode": "view"
     }
   ],

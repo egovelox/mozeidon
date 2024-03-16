@@ -3,7 +3,7 @@ import { TAB_TYPE } from "../constants";
 
 type DropDownItem = { id: string; name: TAB_TYPE };
 
-export function TabTypeDropdown(props: { tabTypes: DropDownItem[]; onTabTypeChange: (newValue: string) => void }) {
+export function TabTypeDropdown(props: { tabTypes: (DropDownItem | undefined)[] ; onTabTypeChange: (newValue: string) => void }) {
   const { tabTypes, onTabTypeChange } = props;
   return (
     <List.Dropdown
@@ -15,10 +15,10 @@ export function TabTypeDropdown(props: { tabTypes: DropDownItem[]; onTabTypeChan
       }}
     >
       <List.Dropdown.Section title="Tab types">
-        {tabTypes.map((tabType) => (
-          <List.Dropdown.Item key={tabType.id} title={tabType.name} value={tabType.name} />
+        {tabTypes.map((tabType, i) => (
+          <List.Dropdown.Item key={tabType?.id ?? i} title={tabType?.name ?? ""} value={tabType?.name ?? ""} />
         ))}
       </List.Dropdown.Section>
     </List.Dropdown>
-  );
+  ) ;
 }

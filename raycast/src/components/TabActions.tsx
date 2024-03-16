@@ -1,10 +1,10 @@
 import { Action, ActionPanel, closeMainWindow, Icon, PopToRootType, showToast, Toast } from "@raycast/api";
-import { closeTab, openHistoryTab, openNewTab, switchTab } from "../actions";
-import { HistoryEntry, Tab } from "../interfaces";
+import { closeTab, openNewTab, switchTab } from "../actions";
+import { TAB_TYPE } from "../constants";
+import { Tab } from "../interfaces";
 
-export class FirefoxActions {
+export class TabActions {
   public static NewTab = NewTabAction;
-  public static HistoryItem = HistoryItemAction;
   public static OpenTabListItem = OpenTabListItemAction;
 }
 
@@ -17,22 +17,13 @@ function NewTabAction({ query }: { query?: string }) {
   );
 }
 
-function HistoryItemAction({ entry: { title, url } }: { entry: HistoryEntry }) {
+function OpenTabListItemAction(props: { isLoading: boolean; type: TAB_TYPE; tab: Tab; onCloseTab: (() => void) | undefined }) {
+  const { isLoading, type, tab, onCloseTab } = props
   return (
-    <ActionPanel title={title}>
-      <MozillaFirefoxHistoryTab url={url} />
-      <Action.OpenInBrowser title="Open in Default Browser" url={url} shortcut={{ modifiers: ["opt"], key: "enter" }} />
-      <Action.CopyToClipboard title="Copy URL" content={url} shortcut={{ modifiers: ["cmd", "shift"], key: "c" }} />
-    </ActionPanel>
-  );
-}
-
-function OpenTabListItemAction(props: { tab: Tab; onCloseTab: (() => void) | undefined }) {
-  return (
-    <ActionPanel title={props.tab.title}>
-      <GoToOpenTabAction tab={props.tab} />
-      {props.onCloseTab ? <CloseTabAction tab={props.tab} onCloseTab={props.onCloseTab} /> : undefined}
-      <Action.CopyToClipboard title="Copy URL" content={props.tab.url} />
+    <ActionPanel title={tab.title}>
+      <GoToOpenTabAction tab={tab} type={type} isLoading={isLoading} />
+      {onCloseTab ? <CloseTabAction tab={tab} onCloseTab={onCloseTab} /> : undefined}
+      <Action.CopyToClipboard title="Copy URL" content={tab.url} />
     </ActionPanel>
   );
 }
@@ -46,9 +37,20 @@ function CloseTabAction(props: { tab: Tab; onCloseTab: () => void }) {
   return <Action title='Close tab' icon={{ source: Icon.XMarkCircle }} onAction={handleAction} />;
 }
 
-function GoToOpenTabAction(props: { tab: Tab }) {
+function GoToOpenTabAction(props: { isLoading: boolean; tab: Tab; type: TAB_TYPE }) {
+  const { isLoading, type, tab } = props
   async function handleAction() {
-    await switchTab(props.tab);
+    // prevent the user to open tab
+    if (isLoading) { return }
+    switch (type) {
+      case TAB_TYPE.OPENED_TABS:
+        await switchTab(tab);
+        break
+      case TAB_TYPE.RECENTLY_CLOSED:
+      case TAB_TYPE.BOOKMARKS:
+        await openNewTab(tab.url);
+        break
+    }
     await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
   }
   return <Action title="Open Tab" icon={{ source: Icon.Eye }} onAction={handleAction} />;
@@ -60,12 +62,4 @@ function OpenNewTabAction(props: { query: string }) {
     await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
   }
   return <Action onAction={handleAction} title={props.query ? `Search "${props.query}"` : "Open Empty Tab"} />;
-}
-
-function MozillaFirefoxHistoryTab({ url }: { url: string }) {
-  async function handleAction() {
-    await openHistoryTab(url);
-    await closeMainWindow();
-  }
-  return <Action title="Open in Firefox" icon={{ source: Icon.Eye }} onAction={handleAction} />;
 }
