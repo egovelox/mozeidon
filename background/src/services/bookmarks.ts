@@ -1,4 +1,4 @@
-import { BOOKMARK_TYPE, ROOT_BOOKMARK_ID } from "../constants";
+import { BOOKMARK_TYPE, MAX_BOOKMARK_COUNT, ROOT_BOOKMARK_ID } from "../constants";
 import { log } from "../logger";
 import { Command } from "../models/command"
 import { Port } from "src/models/port"
@@ -6,7 +6,7 @@ import { Response } from "../models/response";
 
 export function getBookmarks(port: Port, { command: _cmd }: Command) {
 
-  browser.bookmarks.getRecent(50000)
+  browser.bookmarks.getRecent(MAX_BOOKMARK_COUNT)
   .then(async (bookmarks) => {
     const startTime = Date.now()
     const chunkSize = 500;
