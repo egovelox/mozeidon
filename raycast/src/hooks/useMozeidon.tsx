@@ -25,26 +25,24 @@ export function useMozeidon(query = ""): [
     if (isLoading) return
     switch (chosenType) {
       case TAB_TYPE.OPENED_TABS:
-        // do not fetch if already fetched
-        if (tabState.type === TAB_TYPE.OPENED_TABS) break
         tabState = fetchOpenTabs()
         setData(tabState);
         break;
       case TAB_TYPE.RECENTLY_CLOSED:
-        // do not fetch if already fetched
-        if (tabState.type === TAB_TYPE.RECENTLY_CLOSED) break
         tabState = fetchRecentlyClosedTabs()
         setData(tabState);
         break;
       case TAB_TYPE.BOOKMARKS:
         // do not fetch if already fetched
+        // this is the way to ensure that the isLoading + storeValue logic is working
         if (tabState.type === TAB_TYPE.BOOKMARKS) break
         setIsLoading(true)
         tabState = { type: TAB_TYPE.BOOKMARKS, tabs: [] }
         for await (const chunk of getBookmarksChunks()) {
           tabState.tabs.push(...chunk)
           // copy a new tabState
-          // to make the component using this hook reactive
+          // to make the reactive component using this hook
+          // progressively load bookmarks chunk by chunk.
           setData({ ...tabState });
         }
         setIsLoading(false)
