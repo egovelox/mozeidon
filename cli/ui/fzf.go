@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/egovelox/mozicli/browser/core/models"
+	"github.com/egovelox/mozeidon/browser/core/models"
 )
 
 type Printer[T models.Bookmarks | models.Tabs] interface {

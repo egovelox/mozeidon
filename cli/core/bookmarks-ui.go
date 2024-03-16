@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/egovelox/mozicli/browser/core/models"
-	"github.com/egovelox/mozicli/ui"
+	"github.com/egovelox/mozeidon/browser/core/models"
+	"github.com/egovelox/mozeidon/ui"
 )
 
 func (a *App) ChooseBookmark(

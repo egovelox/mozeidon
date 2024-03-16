@@ -9,7 +9,7 @@ export function getBookmarks(port: Port, { command: _cmd }: Command) {
   browser.bookmarks.getRecent(50000)
   .then(async (bookmarks) => {
     const startTime = Date.now()
-    const chunkSize = 200;
+    const chunkSize = 500;
     const chunks = [];
 
     // chunk bookmarks
@@ -72,4 +72,3 @@ async function getBmParentTitles(bm: browser.bookmarks.BookmarkTreeNode) {
 
   return parentTitles
 }
-

@@ -3,7 +3,7 @@ package core
 import (
 	"encoding/json"
 
-	"github.com/egovelox/mozicli/browser/core/models"
+	"github.com/egovelox/mozeidon/browser/core/models"
 )
 
 func (a *App) TabsGet(recentlyClosed bool) <-chan models.Tabs {

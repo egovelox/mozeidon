@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/egovelox/mozicli/browser/core/models"
+	"github.com/egovelox/mozeidon/browser/core/models"
 )
 
 func (a *App) Tabs(query string, recentlyClosed bool) {

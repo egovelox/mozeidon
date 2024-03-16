@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/egovelox/mozicli/cmd"
+	"github.com/egovelox/mozeidon/cmd"
 )
 
 func main() {

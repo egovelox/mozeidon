@@ -1,4 +1,4 @@
-module github.com/egovelox/mozicli
+module github.com/egovelox/mozeidon
 
 go 1.21.1
 

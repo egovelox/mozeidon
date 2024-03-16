@@ -3,7 +3,7 @@ package core
 import (
 	"github.com/spf13/viper"
 
-	"github.com/egovelox/mozicli/browser/core"
+	"github.com/egovelox/mozeidon/browser/core"
 )
 
 type App struct {

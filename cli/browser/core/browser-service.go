@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/egovelox/mozicli/browser/core/ports"
-	"github.com/egovelox/mozicli/browser/infra"
+	"github.com/egovelox/mozeidon/browser/core/ports"
+	"github.com/egovelox/mozeidon/browser/infra"
 )
 
 type BrowserService struct {

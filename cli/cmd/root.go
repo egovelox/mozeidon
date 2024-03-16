@@ -5,12 +5,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/egovelox/mozicli/cmd/bookmarks"
-	"github.com/egovelox/mozicli/cmd/tabs"
+	"github.com/egovelox/mozeidon/cmd/bookmarks"
+	"github.com/egovelox/mozeidon/cmd/tabs"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "mozicli",
+	Use:   "mozeidon",
 	Short: "A cli to interact with moz://a firefox web-browser",
 	Long: `
 Mozicli is a CLI to control a moz://a firefox instance.

@@ -2,10 +2,12 @@ package infra
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
 
 	"github.com/james-barrow/golang-ipc"
 
-	"github.com/egovelox/mozicli/browser/core/models"
+	"github.com/egovelox/mozeidon/browser/core/models"
 )
 
 type IpcClient struct {
@@ -44,14 +46,32 @@ func (ipc *IpcClient) Send(
 func NewIpcClient(host string) *IpcClient {
 	config := ipc.ClientConfig{
 		Encryption: true,
-		Timeout:    10,
-		RetryTimer: 8,
+		Timeout:    2,
+		RetryTimer: 0,
 	}
 
-	ipc, _ := ipc.StartClient(host, &config)
+	ipc, err := ipc.StartClient(host, &config)
+	if err != nil {
+		println(
+			fmt.Sprintf(
+				`{"error": "Cannot connect via ipc with host: %s"}`,
+				host,
+			),
+		)
+		os.Exit(1)
+	}
 
 	for {
-		message, _ := ipc.Read()
+		message, err := ipc.Read()
+		if err != nil {
+			println(
+				fmt.Sprintf(
+					`{"error": "Cannot read via ipc with host: %s"}`,
+					host,
+				),
+			)
+			os.Exit(1)
+		}
 		if message.MsgType == -1 && message.Status == "Connected" {
 			break
 		}

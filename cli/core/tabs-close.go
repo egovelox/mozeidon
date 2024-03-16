@@ -3,7 +3,7 @@ package core
 import (
 	"strings"
 
-	"github.com/egovelox/mozicli/browser/core/models"
+	"github.com/egovelox/mozeidon/browser/core/models"
 )
 
 func (a *App) TabsClose(tabIds []string) {
