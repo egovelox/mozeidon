@@ -2,6 +2,7 @@ export const TABS_FALLBACK = `{"data":[]}`;
 export enum TAB_TYPE {
   OPEN_TABS = "open tabs",
   RECENTLY_CLOSED = "recently closed",
+  BOOKMARKS = "bookmarks",
 }
 export const SEARCH_ENGINE: { [key: string]: string } = {
   google: `https://google.com/search?q=`,

@@ -9,7 +9,7 @@ export interface Preferences {
 
 export class Tab {
   constructor(
-    public readonly id: number,
+    public readonly id: string,
     public readonly pinned: boolean,
     public readonly windowId: number,
     public readonly title: string,
@@ -35,6 +35,13 @@ export interface MozeidonTab {
   title: string;
   url: string;
   active: boolean;
+}
+
+export interface MozeidonBookmark {
+  id: string;
+  parent: string;
+  title: string;
+  url: string;
 }
 
 export interface TabState { type: TAB_TYPE; tabs: Tab[] };

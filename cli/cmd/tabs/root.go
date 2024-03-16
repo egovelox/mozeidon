@@ -22,7 +22,7 @@ var TabsCmd = &cobra.Command{
 			return
 		}
 		if json {
-			app.TabsRaw("", recentlyClosed)
+			app.TabsJson("", recentlyClosed)
 		} else {
 			app.Tabs("", recentlyClosed)
 		}

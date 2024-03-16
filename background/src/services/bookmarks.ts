@@ -7,7 +7,7 @@ export function getRecentBookmarks(port: Port, { command: _cmd }: Command) {
   browser.bookmarks.getRecent(50000)
   .then(async (bookmarks) => {
     const startTime = Date.now()
-    const chunkSize = 800;
+    const chunkSize = 200;
     const chunks = [];
 
     // chunk bookmarks
@@ -38,6 +38,7 @@ async function processChunk(items: browser.bookmarks.BookmarkTreeNode[]) {
     const parentTitles = await getBmParentTitles(item)
 
     bms.push({
+      id: item.id,
       title: item.title,
       url: item.url,
       parent: parentTitles.join(","),

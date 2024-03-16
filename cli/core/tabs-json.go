@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (a *App) TabsRaw(query string, recentlyClosed bool) {
+func (a *App) TabsJson(query string, recentlyClosed bool) {
 	// TODO: handle error
 
 	channel := a.TabsGet(recentlyClosed)

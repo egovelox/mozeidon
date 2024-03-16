@@ -8,6 +8,8 @@ import (
 	"github.com/egovelox/mozicli/core"
 )
 
+var json bool
+
 var BookmarksCmd = &cobra.Command{
 	Use:   "bookmarks",
 	Short: "Bookmarks is a palette that contains bookmarks based commands",
@@ -18,9 +20,14 @@ var BookmarksCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		app.Bookmarks("")
+		if json {
+			app.BookmarksJson("")
+		} else {
+			app.Bookmarks("")
+		}
 	},
 }
 
 func init() {
+	BookmarksCmd.Flags().BoolVarP(&json, "json", "j", false, "json output")
 }

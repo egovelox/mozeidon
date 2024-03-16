@@ -6,7 +6,14 @@ import { useTabSearch } from "./hooks/useTabSearch";
 
 export default function Command(): ReactElement {
   const [searchText, setSearchText] = useState<string>("");
-  const [{ data: { tabs, type }, isLoading }, changeTabType, setData ] = useTabSearch(searchText);
+  const [
+    {
+      data: { tabs, type },
+      isLoading,
+    },
+    changeTabType,
+    setData,
+  ] = useTabSearch(searchText);
 
   const counter = `${tabs.length} ${type}`;
   return (
@@ -19,8 +26,9 @@ export default function Command(): ReactElement {
         tabTypes: [
           { id: "1", name: TAB_TYPE.OPEN_TABS },
           { id: "2", name: TAB_TYPE.RECENTLY_CLOSED },
+          { id: "3", name: TAB_TYPE.BOOKMARKS },
         ],
-        onTabTypeChange: (value) => changeTabType(value as TAB_TYPE),
+        onTabTypeChange: async (value) => await changeTabType(value as TAB_TYPE),
       })}
     >
       <List.Section title={counter}>

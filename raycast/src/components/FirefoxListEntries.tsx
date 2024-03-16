@@ -28,7 +28,7 @@ function OpenTabListEntry({ tab, onCloseTab }: OpenTabListEntryProps) {
       id={tab.id.toString()}
       title={tab.title}
       subtitle={`${(tab.pinned ? "📌 " : "") + tab.domain}`}
-      keywords={[tab.urlWithoutScheme()]}
+      //keywords={[tab.urlWithoutScheme()]}
       actions={<FirefoxActions.OpenTabListItem tab={tab} onCloseTab={onCloseTab} />}
       icon={tab.googleFavicon()}
     />
