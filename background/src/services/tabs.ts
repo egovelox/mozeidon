@@ -16,7 +16,7 @@ export async function newTab(port: Port, { args }: Command) {
     await browser.tabs.create({ url: url.toString() })
   } catch(_) {
     // if not an url, use google
-    const url = `https://www.google.com/search?q=${args}`
+    const url = `https://www.google.com/search?q=${encodeURIComponent(args)}`
     log("open google tab")
     await browser.tabs.create({ url })
   }
