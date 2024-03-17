@@ -4,13 +4,21 @@ import { execSync, spawn } from "child_process";
 import { FIREFOX_OPEN_COMMAND, MOZEIDON, SEARCH_ENGINE, SEARCH_ENGINES, TABS_FALLBACK, TAB_TYPE } from "../constants";
 
 export function openNewTab(queryText: string | null | undefined): void {
-  //await checkAppInstalled()
-  if (!queryText) {
-    execSync(`${MOZEIDON} tabs new`);
-  } else {
-    const encodedQuery = encodeURIComponent(queryText);
-    execSync(`${MOZEIDON} tabs new -- ${SEARCH_ENGINES[SEARCH_ENGINE]}${encodedQuery}`);
+  // default empty query for empty tab
+  let query = "";
+
+  if (queryText) {
+    try {
+      query = ` -- "${new URL(queryText).toString()}"`;
+
+      // not an url, then it should open a search-engine request
+    } catch (_) {
+      const encodedQuery = encodeURIComponent(queryText);
+      query = ` -- "${SEARCH_ENGINES[SEARCH_ENGINE]}${encodedQuery}"`;
+    }
   }
+
+  execSync(`${MOZEIDON} tabs new${query}`);
   openFirefox();
 }
 
