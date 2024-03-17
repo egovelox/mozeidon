@@ -27,7 +27,7 @@ function TabItem({ isLoading, type, tab, onCloseTab }: TabItemProps) {
       id={tab.id.toString()}
       title={tab.title}
       subtitle={`${(tab.pinned ? "📌 " : "") + tab.domain}`}
-      //keywords={[tab.urlWithoutScheme()]}
+      keywords={[tab.domain, tab.urlWithoutScheme()]}
       actions={<TabActions.OpenTabListItem tab={tab} type={type} isLoading={isLoading} onCloseTab={onCloseTab} />}
       icon={tab.googleFavicon()}
     />

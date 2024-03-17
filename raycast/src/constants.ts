@@ -4,9 +4,9 @@ export const MOZEIDON = getPreferenceValues().mozeidon
 export const SEARCH_ENGINE = getPreferenceValues().searchEngine
 export const TABS_FALLBACK = `{"data":[]}`;
 export enum TAB_TYPE {
-  OPENED_TABS = "opened tabs",
-  RECENTLY_CLOSED = "recently closed",
-  BOOKMARKS = "bookmarks",
+  OPENED_TABS = "Opened Tabs",
+  RECENTLY_CLOSED = "Recently Closed",
+  BOOKMARKS = "Bookmarks",
   // only for initial state
   NONE = "",
 }

@@ -1,5 +1,5 @@
-import { SearchResult, Tab, TabState } from "../interfaces";
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { SearchResult, TabState } from "../interfaces";
+import { useState, Dispatch, SetStateAction } from "react";
 import { TAB_TYPE } from "../constants";
 import { fetchOpenTabs, fetchRecentlyClosedTabs, getBookmarksChunks } from "../actions";
 
@@ -10,7 +10,7 @@ import { fetchOpenTabs, fetchRecentlyClosedTabs, getBookmarksChunks } from "../a
 */
 let tabState: TabState = { type: TAB_TYPE.NONE, tabs: [] };
 
-export function useMozeidon(query = ""): [
+export function useMozeidonTabs(): [
   SearchResult<TabState>, 
   (chosenType?: TAB_TYPE) => Promise<void>,
   Dispatch<SetStateAction<TabState>>
@@ -18,8 +18,6 @@ export function useMozeidon(query = ""): [
 
   const [data, setData] = useState<TabState>(tabState);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const queryParts = query.toLowerCase().split(/\s+/);
 
   async function changeTabType(chosenType?: TAB_TYPE) {
     if (isLoading) return
@@ -50,17 +48,6 @@ export function useMozeidon(query = ""): [
       default: break;
     }
   }
-
-  useEffect(() => {
-    setIsLoading(true)
-    const tabs = tabState.tabs
-     .map((tab): [Tab, string] => [tab, `${tab.title.toLowerCase()} ${tab.urlWithoutScheme().toLowerCase()} ${tab.domain.toLowerCase()}`])
-     .filter(([, searchable]) => queryParts.reduce((isMatch, part) => isMatch && searchable.includes(part), true))
-     .map(([tab]) => tab)
-
-    setData({type: data.type, tabs})
-    setIsLoading(false)
-  }, [query])
 
   return [{ data, isLoading }, changeTabType, setData];
 }

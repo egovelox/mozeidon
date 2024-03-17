@@ -2,7 +2,7 @@ import { List } from "@raycast/api";
 import { ReactElement, useState } from "react";
 import { TabList, TabTypeDropdown } from "./components";
 import { TAB_TYPE } from "./constants";
-import { useMozeidon } from "./hooks/useMozeidon";
+import { useMozeidonTabs } from "./hooks/useMozeidon";
 
 export default function Command(): ReactElement {
   const [searchText, setSearchText] = useState<string>("");
@@ -13,15 +13,15 @@ export default function Command(): ReactElement {
     },
     changeTabType,
     setData,
-  ] = useMozeidon(searchText);
+  ] = useMozeidonTabs();
 
-  const title = `${tabs.length} ${type}`;
   return (
     <List
       isLoading={isLoading}
       throttle={true}
       onSearchTextChange={setSearchText}
-      navigationTitle={title}
+      filtering={{keepSectionOrder: true}}
+      navigationTitle={`${tabs.length} ${type}`}
       searchBarAccessory={TabTypeDropdown({
         tabTypes: [
           // prevent user from changing dropdown item while bookmarks are loading
@@ -36,7 +36,7 @@ export default function Command(): ReactElement {
         },
       })}
     >
-      <List.Section title={title}>
+      <List.Section title={type}>
         {tabs.map((tab) => (
           <TabList.TabItem
             isLoading={isLoading}
