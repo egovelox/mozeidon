@@ -1,8 +1,9 @@
 import { BOOKMARK_TYPE, MAX_BOOKMARK_COUNT, ROOT_BOOKMARK_ID } from "../constants";
 import { log } from "../logger";
 import { Command } from "../models/command"
-import { Port } from "src/models/port"
+import { Port } from "../models/port"
 import { Response } from "../models/response";
+import { delay } from "../utils";
 
 const inMemoryBookmarkMap = new Map<string, browser.bookmarks.BookmarkTreeNode>
 
@@ -25,19 +26,18 @@ export function getBookmarks(port: Port, { command: _cmd }: Command) {
     for (const chunk of chunks) {
       const bms = await processChunk(chunk)
       port.postMessage(Response.data(bms))
-      //await new Promise(res => setTimeout(res, 100))
     }
 
     const endTime = Date.now()
     log(`sending back bookmarks in ${endTime - startTime} ms`)
     // pause 100ms, or this end message may be received before the last chunk
-    await new Promise(res => setTimeout(res, 100))
+    await delay(100)
     port.postMessage(Response.end());
   })
 }
 
 
-export async function processChunk(items: browser.bookmarks.BookmarkTreeNode[]) {
+async function processChunk(items: browser.bookmarks.BookmarkTreeNode[]) {
   const bms  = []
   for (const p of (
     await getBmParentTitles(

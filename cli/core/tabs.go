@@ -16,9 +16,10 @@ func (a *App) Tabs(query string, recentlyClosed bool) {
 		// Case-insensitive
 		"-i",
 		"--cycle",
+		"--color=header:108",
 		"--ansi",
 		"--border-label=TABS",
-		"--exact",
+		//"--exact",
 		"--no-sort",
 		"--scheme=history",
 		"--query",
@@ -33,12 +34,13 @@ func (a *App) Tabs(query string, recentlyClosed bool) {
 		),
 		fmt.Sprintf("--bind=%s:print-query", tabsConfig["fzf_open_key"]),
 		fmt.Sprintf(
-			`--header= close [%s], open [%s]`,
+			"--header=close tab(s) [%s]\nopen new tab [%s]",
 			tabsConfig["fzf_close_key"],
 			tabsConfig["fzf_open_key"],
 		),
-		"--header-first",
 		// omit windowId and tabId cf tabs-ui.go
+		"--header-first",
+		"--color=header:#5e6b6b",
 		"--with-nth=2..",
 	}
 	res, err := a.ChooseTab(a.TabsGet(recentlyClosed), fzfFlags)
