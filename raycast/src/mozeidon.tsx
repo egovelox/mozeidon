@@ -20,7 +20,7 @@ export default function Command(): ReactElement {
       isLoading={isLoading}
       throttle={true}
       onSearchTextChange={setSearchText}
-      filtering={{keepSectionOrder: true}}
+      filtering={{ keepSectionOrder: true }}
       navigationTitle={`${tabs.length} ${type}`}
       searchBarAccessory={TabTypeDropdown({
         tabTypes: [
@@ -31,7 +31,7 @@ export default function Command(): ReactElement {
           { id: "3", name: TAB_TYPE.BOOKMARKS },
         ],
         onTabTypeChange: async (value) => {
-          console.log("change", value);
+          //console.log("change", value);
           await changeTabType(value as TAB_TYPE);
         },
       })}

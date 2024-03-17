@@ -22,6 +22,15 @@
       "placeholder": "e.g /opt/homebrew/bin/mozeidon"
     },
     {
+      "name": "firefox",
+      "type": "textfield",
+      "required": false,
+      "title": "Firefox open command file-path",
+      "default": "open -a firefox",
+      "description": "The command file-path to open firefox",
+      "placeholder": "e.g /opt/homebrew/bin/mozeidon"
+    },
+    {
       "name": "searchEngine",
       "type": "dropdown",
       "required": false,

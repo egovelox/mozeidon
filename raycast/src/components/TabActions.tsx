@@ -59,6 +59,7 @@ function GoToOpenTabAction(props: { isLoading: boolean; tab: Tab; type: TAB_TYPE
 function OpenNewTabAction(props: { query: string }) {
   async function handleAction() {
     await openNewTab(props.query);
+
     await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
   }
   return <Action onAction={handleAction} title={props.query ? `Search "${props.query}"` : "Open Empty Tab"} />;

@@ -1,7 +1,9 @@
 import { getPreferenceValues } from "@raycast/api";
 
-export const MOZEIDON = getPreferenceValues().mozeidon
-export const SEARCH_ENGINE = getPreferenceValues().searchEngine
+const preferences = getPreferenceValues<Preferences.Mozeidon>()
+export const MOZEIDON = preferences.mozeidon
+export const SEARCH_ENGINE = preferences.searchEngine
+export const FIREFOX_OPEN_COMMAND = preferences.firefox
 export const TABS_FALLBACK = `{"data":[]}`;
 export enum TAB_TYPE {
   OPENED_TABS = "Opened Tabs",
