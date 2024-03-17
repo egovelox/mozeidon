@@ -89,7 +89,6 @@
     "dev": "ray develop",
     "fix-lint": "ray lint --fix",
     "lint": "ray lint",
-    "publish": "ray publish",
-    "prettier": "prettier src/*.tsx --write"
+    "publish": "ray publish"
   }
 }

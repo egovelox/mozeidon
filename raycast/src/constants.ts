@@ -1,9 +1,9 @@
 import { getPreferenceValues } from "@raycast/api";
 
-const preferences = getPreferenceValues<Preferences.Mozeidon>()
-export const MOZEIDON = preferences.mozeidon
-export const SEARCH_ENGINE = preferences.searchEngine
-export const FIREFOX_OPEN_COMMAND = preferences.firefox
+const preferences = getPreferenceValues<Preferences.Mozeidon>();
+export const MOZEIDON = preferences.mozeidon;
+export const SEARCH_ENGINE = preferences.searchEngine;
+export const FIREFOX_OPEN_COMMAND = preferences.firefox;
 export const TABS_FALLBACK = `{"data":[]}`;
 export enum TAB_TYPE {
   OPENED_TABS = "Opened Tabs",
@@ -12,10 +12,10 @@ export enum TAB_TYPE {
   // only for initial state
   NONE = "",
 }
-export const SEARCH_ENGINES: { [key: string]: string } = {
-  google: `https://google.com/search?q=`,
-  bing: `https://www.bing.com/search?q=`,
-  baidu: `https://www.baidu.com/s?wd=`,
-  brave: `https://search.brave.com/search?q=`,
-  duckduckgo: `https://duckduckgo.com/?q=`,
+export const SEARCH_ENGINES: { [T in typeof SEARCH_ENGINE]: string } = {
+  Google: `https://google.com/search?q=`,
+  Bing: `https://www.bing.com/search?q=`,
+  Baidu: `https://www.baidu.com/s?wd=`,
+  Brave: `https://search.brave.com/search?q=`,
+  DuckDuckGo: `https://duckduckgo.com/?q=`,
 };

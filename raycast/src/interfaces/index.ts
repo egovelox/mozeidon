@@ -44,13 +44,9 @@ export interface MozeidonBookmark {
   url: string;
 }
 
-export interface TabState { type: TAB_TYPE; tabs: Tab[] };
-
-export interface HistoryEntry {
-  id: number;
-  url: string;
-  title: string;
-  lastVisited: Date;
+export interface TabState {
+  type: TAB_TYPE;
+  tabs: Tab[];
 }
 
 export interface SearchResult<T> {
@@ -58,5 +54,3 @@ export interface SearchResult<T> {
   errorView?: ReactNode;
   isLoading: boolean;
 }
-
-export type GroupedEntries = Map<string, HistoryEntry[]>;

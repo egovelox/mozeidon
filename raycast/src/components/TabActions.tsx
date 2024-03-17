@@ -17,8 +17,13 @@ function NewTabAction({ query }: { query?: string }) {
   );
 }
 
-function OpenTabListItemAction(props: { isLoading: boolean; type: TAB_TYPE; tab: Tab; onCloseTab: (() => void) | undefined }) {
-  const { isLoading, type, tab, onCloseTab } = props
+function OpenTabListItemAction(props: {
+  isLoading: boolean;
+  type: TAB_TYPE;
+  tab: Tab;
+  onCloseTab: (() => void) | undefined;
+}) {
+  const { isLoading, type, tab, onCloseTab } = props;
   return (
     <ActionPanel title={tab.title}>
       <GoToOpenTabAction tab={tab} type={type} isLoading={isLoading} />
@@ -32,24 +37,30 @@ function CloseTabAction(props: { tab: Tab; onCloseTab: () => void }) {
   async function handleAction() {
     closeTab(props.tab);
     props.onCloseTab();
-    await showToast({ title: "", message: `Closed tab with id ${props.tab.id}`, style: Toast.Style.Success });
+    await showToast({
+      title: "",
+      message: `Closed Tab !`,
+      style: Toast.Style.Success,
+    });
   }
-  return <Action title='Close tab' icon={{ source: Icon.XMarkCircle }} onAction={handleAction} />;
+  return <Action title="Close Tab" icon={{ source: Icon.XMarkCircle }} onAction={handleAction} />;
 }
 
 function GoToOpenTabAction(props: { isLoading: boolean; tab: Tab; type: TAB_TYPE }) {
-  const { isLoading, type, tab } = props
+  const { isLoading, type, tab } = props;
   async function handleAction() {
     // prevent the user to open tab
-    if (isLoading) { return }
+    if (isLoading) {
+      return;
+    }
     switch (type) {
       case TAB_TYPE.OPENED_TABS:
-        await switchTab(tab);
-        break
+        switchTab(tab);
+        break;
       case TAB_TYPE.RECENTLY_CLOSED:
       case TAB_TYPE.BOOKMARKS:
-        await openNewTab(tab.url);
-        break
+        openNewTab(tab.url);
+        break;
     }
     await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
   }
@@ -58,7 +69,7 @@ function GoToOpenTabAction(props: { isLoading: boolean; tab: Tab; type: TAB_TYPE
 
 function OpenNewTabAction(props: { query: string }) {
   async function handleAction() {
-    await openNewTab(props.query);
+    openNewTab(props.query);
 
     await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
   }

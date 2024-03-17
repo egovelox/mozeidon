@@ -20,18 +20,19 @@ export default function Command(): ReactElement {
       isLoading={isLoading}
       throttle={true}
       onSearchTextChange={setSearchText}
-      filtering={{ keepSectionOrder: true }}
+      filtering={{ keepSectionOrder: false }}
       navigationTitle={`${tabs.length} ${type}`}
       searchBarAccessory={TabTypeDropdown({
         tabTypes: [
-          // prevent user from changing dropdown item while bookmarks are loading
-          // this would mess up with mozeidon which cannot handle concurrency
+          /*
+          prevent user from changing dropdown item while bookmarks are loading
+          this would mess up with mozeidon which cannot handle concurrency
+          */
           !isLoading ? { id: "1", name: TAB_TYPE.OPENED_TABS } : undefined,
           !isLoading ? { id: "2", name: TAB_TYPE.RECENTLY_CLOSED } : undefined,
           { id: "3", name: TAB_TYPE.BOOKMARKS },
         ],
         onTabTypeChange: async (value) => {
-          //console.log("change", value);
           await changeTabType(value as TAB_TYPE);
         },
       })}

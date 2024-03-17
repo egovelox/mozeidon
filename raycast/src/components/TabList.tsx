@@ -4,7 +4,12 @@ import { Tab } from "../interfaces";
 import { SEARCH_ENGINE, TAB_TYPE } from "../constants";
 
 type NewTabItemProps = { searchText?: string };
-type TabItemProps = { isLoading: boolean; type: TAB_TYPE, tab: Tab; onCloseTab: (() => void) | undefined };
+type TabItemProps = {
+  isLoading: boolean;
+  type: TAB_TYPE;
+  tab: Tab;
+  onCloseTab: (() => void) | undefined;
+};
 
 export class TabList {
   public static NewTabItem = NewTabItem;
