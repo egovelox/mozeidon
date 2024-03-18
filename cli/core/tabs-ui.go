@@ -34,12 +34,12 @@ func (_ TabsPrinter) Print(stdin io.WriteCloser, tabs <-chan models.Tabs) {
 		noneColor := "\033[0m"
 		for _, item := range receivedTabs.Items {
 			str := fmt.Sprintf(
-				"%s  %s %s %s %s %s \n",
+				"%s %s %s %s %s %s \n",
 				// this field will be hidden by fzf --with-nth
 				fmt.Sprintf("%d:%d", item.WindowId, item.Id),
 				getTabIcon(item.Pinned),
 				darkGreenColor,
-				shortString(item.Domain, 30),
+				shortString(item.Domain, 30, "..."),
 				noneColor,
 				item.Title,
 			)
@@ -58,10 +58,9 @@ func getTabIcon(pinned bool) string {
 	return "🦊"
 }
 
-func shortString(s string, count int) string {
-	maxCount := len(s)
-	if count > maxCount {
-		count = maxCount
+func shortString(s string, count int, suffix string) string {
+	if count < len(s) {
+		return s[0:count] + suffix
 	}
-	return s[0:count]
+	return s
 }

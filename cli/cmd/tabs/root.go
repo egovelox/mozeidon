@@ -10,6 +10,7 @@ import (
 
 var json bool
 var recentlyClosed bool
+var template string
 
 var TabsCmd = &cobra.Command{
 	Use:   "tabs",
@@ -21,7 +22,9 @@ var TabsCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		if json {
+		if len(template) > 0 {
+			app.TabsTemplate(template)
+		} else if json {
 			app.TabsJson("", recentlyClosed)
 		} else {
 			app.Tabs("", recentlyClosed)
@@ -30,6 +33,8 @@ var TabsCmd = &cobra.Command{
 }
 
 func init() {
+	TabsCmd.Flags().
+		StringVarP(&template, "go-template", "t", "", "go-template to customize output")
 	TabsCmd.Flags().BoolVarP(&json, "json", "j", false, "json output")
 	TabsCmd.Flags().
 		BoolVarP(&recentlyClosed, "closed", "c", false, "only recently-closed tabs")
