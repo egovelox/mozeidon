@@ -1,6 +1,6 @@
 # Mozeidon 
 
-Mozeidon is essentialy a CLI bringing back home Mozilla Firefox tabs and bookmarks. 
+Mozeidon is essentially a CLI to handle Mozilla Firefox tabs and bookmarks. 
 
 It's all free, and was developed for fun 🤓.
 
@@ -18,32 +18,36 @@ Using the ``mozeidon`` command, you can :
 <img width="1512" alt="mozeidon-cli-2" src="https://github.com/egovelox/mozeidon/assets/56078155/9ba5c99b-0436-433c-9b73-427f2b3c897f">
 <br/><br/>
 
-All the code is open-source, you may review it easily and be sure that : 
-- your browser data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
-- at any time, stopping or removing the ``mozeidon addon extension`` will stop or remove all related processes on your machine.
+All the code is available here as open-source. You can review it easily and be sure that : 
+- your browsing data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
+- at any time, stopping or removing the ``mozeidon firefox addon extension`` will stop or remove all related processes on your machine.
 
 Here you'll find :
-- a guide to complete installation of the mozeidon native-app and mozeidon CLI.
-- examples of the CLI usage (including fzf and fzf-tmux) 
+- a guide to complete the installation of the mozeidon native-app and mozeidon CLI.
+- examples of the CLI usage (including integration with fzf and fzf-tmux) 
 - a Raycast extension built around Mozeidon (for MacOS only)
 
 ## Architecture
 
+
+<img width="788" alt="mozeidon-architecture" src="https://github.com/egovelox/mozeidon/assets/56078155/15192276-e85f-4de0-956d-6eba0517303b">
+<br/><br/>
+
 Mozeidon is built on ipc and native-messaging protocols, using the following components :
 
-- the Mozeidon addon, a JS script running in the Mozilla browser, receives commands and sends back data (i.e tabs, bookmarks, etc) by leveraging various browser APIs.
+- the Mozeidon firefox-addon, a JS script running in the Mozilla browser, receives commands and sends back data (i.e tabs, bookmarks, etc) by leveraging various browser APIs.
 
-- the Mozeidon native-app, a Go program, interacts with the Mozeidon addon. It sends commands to, and receive data from the browser addon - via native-messaging protocol.
+- the Mozeidon native-app, a Go program, interacts with the Mozeidon firefox-addon. It sends commands to, and receive data from the browser addon - via native-messaging protocol.
 
 - the Mozeidon CLI, another Go program, interacts with the Mozeidon native-app. It sends commands to and receive data from the native-app - via ipc protocol.
 
 
 Of course you need to install each of these components :
-- the Mozeidon addon
+- the Mozeidon firefox-addon
 - the Mozeidon native-app
 - the Mozeidon CLI
 
-## Mozeidon addon
+## Mozeidon firefox-addon
 
 The mozeidon addon for Mozilla Firefox can be found here :
 
@@ -101,7 +105,7 @@ cd cli && go build
 ### How to use the CLI with ``go-template`` syntax for customized output :
 
 ```bash
-mozeidon tabs --go-template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\\u001b[38;5;109m"}} {{.Domain}}{{"\\033[0m"}} {{.Title}}{{"\n"}}{{end}}'
+mozeidon tabs get --go-template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\\u001b[38;5;109m"}} {{.Domain}}{{"\\033[0m"}} {{.Title}}{{"\n"}}{{end}}'
 ```
 
 ### Customized tabs output with a pipe into ``fzf``
@@ -111,7 +115,7 @@ If you've installed [fzf](https://github.com/junegunn/fzf) you can use it as a k
 The below `bash` command shows how `fzf` can be used to select a tab, and to open it in your browser.
 
 ```bash
-mozeidon tabs --go-template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}} {{.Domain}}{{"\033[0m"}} {{.Title}}{{"\n"}}{{end}}' \
+mozeidon tabs get --go-template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}} {{.Domain}}{{"\033[0m"}} {{.Title}}{{"\n"}}{{end}}' \
 | fzf --ansi --with-nth 3.. --bind=enter:accept-non-empty \
 | cut -d ' ' -f1 \
 | xargs -n1 -I % sh -c 'mozeidon tabs switch % && open -a firefox'
@@ -134,7 +138,7 @@ Now create the script ``$HOME/.tmux/mozeidon_tabs.sh`` :
 
 ```bash
 #!/bin/bash
-mozeidon tabs --go-template \
+mozeidon tabs get --go-template \
 '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}} {{.Domain}}{{"\033[0m"}}  {{.Title}}{{"\n"}}{{end}}' \
 | fzf-tmux -p 60% -- \
 --no-bold --layout=reverse --margin 0% --no-separator --no-info --black --color bg+:black,hl:reverse,hl+:reverse,gutter:black --ansi --with-nth 3.. --bind=enter:accept-non-empty \
@@ -151,7 +155,7 @@ This more advanced script will allow to :
 
 ```bash
 #!/bin/bash
-$HOME/bin/mozeidon tabs --go-template \
+$HOME/bin/mozeidon tabs get --go-template \
   '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}}  {{.Domain}}{{"\033[0m"}}  {{.Title}}{{"\n"}}{{end}}'\
   | fzf-tmux -p 60% -- \
   --border-label=TABS \

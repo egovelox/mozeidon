@@ -33,7 +33,7 @@ export function closeTab(tab: Tab): void {
 }
 
 export function fetchOpenTabs(): TabState {
-  const data = execSync(`${MOZEIDON} tabs`);
+  const data = execSync(`${MOZEIDON} tabs get`);
   const parsedTabs: { data: MozeidonTab[] } = JSON.parse(data.toString() || TABS_FALLBACK);
   return {
     type: TAB_TYPE.OPENED_TABS,
@@ -53,7 +53,7 @@ export function fetchOpenTabs(): TabState {
 }
 
 export function fetchRecentlyClosedTabs(): TabState {
-  const data = execSync(`${MOZEIDON} tabs --closed`);
+  const data = execSync(`${MOZEIDON} tabs get --closed`);
   const parsedTabs: { data: MozeidonTab[] } = JSON.parse(data.toString() || TABS_FALLBACK);
   return {
     type: TAB_TYPE.RECENTLY_CLOSED,
