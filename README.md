@@ -89,7 +89,7 @@ cd cli && go build
 ### How to use the CLI with ``go-template`` syntax for customized output :
 
 ```bash
-mozeidon tabs --template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\\u001b[38;5;109m"}} {{.Domain}}{{"\\033[0m"}} {{.Title}}{{"\n"}}{{end}}'
+mozeidon tabs --go-template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\\u001b[38;5;109m"}} {{.Domain}}{{"\\033[0m"}} {{.Title}}{{"\n"}}{{end}}'
 ```
 
 ### Customized tabs output with a pipe into ``fzf``
@@ -99,7 +99,7 @@ If you've installed [fzf](https://github.com/junegunn/fzf) you can use it as a k
 The below `bash` command shows how `fzf` can be used to select a tab, and to open it in your browser.
 
 ```bash
-mozeidon tabs -t '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}} {{.Domain}}{{"\033[0m"}} {{.Title}}{{"\n"}}{{end}}' \
+mozeidon tabs --go-template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}} {{.Domain}}{{"\033[0m"}} {{.Title}}{{"\n"}}{{end}}' \
 | fzf --ansi --with-nth 3.. --bind=enter:accept-non-empty \
 | cut -d ' ' -f1 \
 | xargs -n1 -I % sh -c 'mozeidon tabs switch % && open -a firefox'
@@ -122,7 +122,7 @@ Now create the script ``$HOME/.tmux/mozeidon_tabs.sh`` :
 
 ```bash
 #!/bin/bash
-mozeidon tabs -t \
+mozeidon tabs --go-template \
 '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}} {{.Domain}}{{"\033[0m"}}  {{.Title}}{{"\n"}}{{end}}' \
 | fzf-tmux -p 60% -- \
 --no-bold --layout=reverse --margin 0% --no-separator --no-info --black --color bg+:black,hl:reverse,hl+:reverse,gutter:black --ansi --with-nth 3.. --bind=enter:accept-non-empty \
@@ -139,7 +139,7 @@ This more advanced script will allow to :
 
 ```bash
 #!/bin/bash
-$HOME/bin/mozeidon tabs -t \
+$HOME/bin/mozeidon tabs --go-template \
   '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}}  {{.Domain}}{{"\033[0m"}}  {{.Title}}{{"\n"}}{{end}}'\
   | fzf-tmux -p 60% -- \
   --border-label=TABS \
