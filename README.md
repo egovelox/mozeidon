@@ -2,7 +2,12 @@
 
 Mozeidon is essentialy a CLI bringing back home Mozilla Firefox tabs and bookmarks. 
 
-You'll find here also :
+All the code is open-source, you may review it easily and be sure that : 
+- your browser data (tabs, bookmarks) will always stay safe, it will never be used outside of your system, for any other purpose than offering a CLI around Mozilla Firefox.
+- at any time, stopping or removing the ``mozeidon addon extension`` will stop or remove all related processes on your machine.
+
+Here you'll find :
+- a guide to complete installation of the mozeidon native-app and mozeidon CLI.
 - examples of the CLI usage (including fzf and fzf-tmux) 
 - a Raycast extension built around Mozeidon (for MacOS only)
 
