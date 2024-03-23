@@ -2,6 +2,10 @@
 
 Mozeidon is essentialy a CLI bringing back home Mozilla Firefox tabs and bookmarks. 
 
+<img width="1290" alt="mozeidon-cli" src="https://github.com/egovelox/mozeidon/assets/56078155/f3569595-03fd-4ea4-9922-5fb1acfd4a69">
+<br/><br/>
+
+
 All the code is open-source, you may review it easily and be sure that : 
 - your browser data (tabs, bookmarks) will always stay safe, it will never be used outside of your system, for any other purpose than offering a CLI around Mozilla Firefox.
 - at any time, stopping or removing the ``mozeidon addon extension`` will stop or remove all related processes on your machine.
