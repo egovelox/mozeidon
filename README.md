@@ -55,13 +55,19 @@ The mozeidon addon for Mozilla Firefox can be found here :
 
 ## Mozeidon native-app
 
-The mozeidon native-app, a very simple ipc server written in ``go``, will allow the mozeidon add-on to receive commands from and send responses to the mozeidon CLI (see below).
+The [mozeidon native-app](https://github.com/egovelox/mozeidon-native-app), a very simple ipc server written in ``go``, will allow the mozeidon add-on to receive commands from and send responses to the mozeidon CLI (see below).
 
-If you're using MacOS M1/M2, you should be able to use directly the available binary in [cli/mozeidon](https://github.com/egovelox/mozeidon/blob/main/native-app/mozeidon-app).
+On MacOS or Linux, you can install it using ``homebrew`` :
+```bash
+brew tap egovelox/homebrew-mozeidon ;
+
+brew install egovelox/mozeidon/mozeidon-native-app ;
+```
 
 Otherwise, you may need to build the binary yourself for your platform :
+Clone the [mozeidon native-app repository](https://github.com/egovelox/mozeidon-native-app) and run :
 ```bash
-cd native-app && go build
+cd mozeidon-native-app && go build
 ```
 
 As a standard native-app, it has to be referenced it into your Firefox configuration.
@@ -70,13 +76,15 @@ As a standard native-app, it has to be referenced it into your Firefox configura
 
 On ``MacOS``, first locate the ``~/Library/Application Support/Mozilla/NativeMessagingHosts`` directory (or create it if missing).
 
-Then create a ``mozeidon.json`` file, and copy into it the following ``json``, replacing ``YOUR_INSTALLATION_PATH`` with the absolute path of the folder where you cloned this git repository.
+Then create a ``mozeidon.json`` file, and copy into it the following ``json``.
+
+Note: depending on your installation, you may need to replace the value in ``"path"`` with the absolute path of the mozeidon-native-app.
 
 ```json
 {
   "name": "mozeidon",
   "description": "Native messaging add-on to interact with your browser",
-  "path": "/YOUR_INSTALLATION_PATH/mozeidon/native-app/mozeidon-app",
+  "path": "/opt/homebrew/bin/mozeidon-native-app",
   "type": "stdio",
   "allowed_extensions": [
     "mozeidon-addon@egovelox.com"
@@ -87,7 +95,7 @@ Then create a ``mozeidon.json`` file, and copy into it the following ``json``, r
 Now the mozeidon add-on will be allowed to interact with the mozeidon native-app.
 
 Note : 
-For other OS than ``MacOS``, please check the [Mozilla documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_manifests#manifest_location) to find the correct location.
+For other OS than ``MacOS``, please check the [Mozilla documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_manifests#manifest_location) to find the correct location of the Firefox ``NativeMessagingHosts`` directory.
 
 Then, you should be able to use the Mozeidon CLI or the Raycast extension.
 
@@ -95,7 +103,12 @@ Then, you should be able to use the Mozeidon CLI or the Raycast extension.
 
 The Mozeidon CLI is written in ``go``. 
 
-If you're using MacOS M1/M2, you should be able to use directly the available binary in [cli/mozeidon](https://github.com/egovelox/mozeidon/blob/main/cli/mozeidon).
+On MacOS or Linux, you can install it using ``homebrew`` :
+```bash
+brew tap egovelox/homebrew-mozeidon ;
+
+brew install egovelox/mozeidon/mozeidon ;
+```
 
 Otherwise you need to build the binary yourself for your platform :
 ```bash
