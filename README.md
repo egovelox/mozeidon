@@ -30,10 +30,22 @@ The mozeidon addon for Mozilla Firefox can be found here :
 
 ## Mozeidon native-app
 
-The mozeidon native-app will allow the add-on to interact with the mozeidon CLI (see below).
+The mozeidon native-app, a very simple ipc server written in ``go``, will allow the mozeidon add-on to receive commands from and send responses to the mozeidon CLI (see below).
 
-As every native-app, you need to allow it into your browser :
+If you're using MacOS M1/M2, you should be able to use directly the available binary in [cli/mozeidon](https://github.com/egovelox/mozeidon/blob/main/native-app/mozeidon-app).
 
+Otherwise, you may need to build the binary yourself for your platform :
+```bash
+cd native-app && go build
+```
+
+As a standard native-app, it has to be referenced it into your Firefox configuration.
+
+### Referencing the native-app into your Firefox configuration
+
+On ``MacOS``, first locate the ``~/Library/Application Support/Mozilla/NativeMessagingHosts`` directory (or create it if missing).
+
+Then create a ``mozeidon.json`` file, and copy into it the following ``json``, replacing ``YOUR_INSTALLATION_PATH`` with the absolute path of the folder where you cloned this git repository.
 
 ```json
 {
@@ -47,10 +59,25 @@ As every native-app, you need to allow it into your browser :
 }
 ```
 
+Now the mozeidon add-on will be allowed to interact with the mozeidon native-app.
+
+Note : 
+For other OS than ``MacOS``, please check the [Mozilla documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_manifests#manifest_location) to find the correct location.
+
+Then, you should be able to use the Mozeidon CLI or the Raycast extension.
 
 ## Mozeidon CLI
 
-### How to use the ``go-template`` syntax for customized output :
+The Mozeidon CLI is written in ``go``. 
+
+If you're using MacOS M1/M2, you should be able to use directly the available binary in [cli/mozeidon](https://github.com/egovelox/mozeidon/blob/main/cli/mozeidon).
+
+Otherwise you need to build the binary yourself for your platform :
+```bash
+cd cli && go build
+```
+
+### How to use the CLI with ``go-template`` syntax for customized output :
 
 ```bash
 mozeidon tabs --template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\\u001b[38;5;109m"}} {{.Domain}}{{"\\033[0m"}} {{.Title}}{{"\n"}}{{end}}'
@@ -123,3 +150,5 @@ open new tab [C-o]'\
   | grep -v "[🦊📌]" \
   | xargs -r -I {} sh -c '$HOME/bin/mozeidon tabs new "{}" && open -a firefox'
 ```
+
+## Raycast extension
