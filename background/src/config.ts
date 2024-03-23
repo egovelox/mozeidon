@@ -1,2 +1,2 @@
 export const ADDON_NAME = "mozeidon"
-export const DEBUG = true
+export const DEBUG = false

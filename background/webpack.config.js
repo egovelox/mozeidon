@@ -7,7 +7,7 @@ module.exports = {
     main: "./src/app.ts",
   },
   output: {
-    path: path.resolve(__dirname, '../add-on'),
+    path: path.resolve(__dirname, './dist'),
     filename: "background.js"
   },
   resolve: {

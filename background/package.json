@@ -7,7 +7,12 @@
   "scripts": {
     "build": "webpack --devtool false"
   },
-  "dependencies": {},
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
+  "dependencies": {
+  },
   "devDependencies": {
     "@types/firefox-webext-browser": "120.0.1",
     "ts-loader": "9.5.1",

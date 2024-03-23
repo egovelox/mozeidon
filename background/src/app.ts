@@ -12,12 +12,14 @@ listen(port)
 
 
 function listen(port: Port) {
+
 port.onMessage.addListener((payload: Payload) => {
   log(`[${ADDON_NAME}] Got message from native application: ${JSON.stringify(payload)}`);
 
   const { payload: command } = payload
   handler(port, command);
 });
+
 port.onDisconnect.addListener(async (port) => {
   log(`[${ADDON_NAME}] Disconnected with native application`)
   log(`[${ADDON_NAME}] Broken port ?`, port)
@@ -31,4 +33,5 @@ port.onDisconnect.addListener(async (port) => {
   log(`[${ADDON_NAME}] Connected with native application`, port)
   listen(port)
 })
+
 }

@@ -33,7 +33,7 @@ export function closeTab(tab: Tab): void {
 }
 
 export function fetchOpenTabs(): TabState {
-  const data = execSync(`${MOZEIDON} tabs --json`);
+  const data = execSync(`${MOZEIDON} tabs`);
   const parsedTabs: { data: MozeidonTab[] } = JSON.parse(data.toString() || TABS_FALLBACK);
   return {
     type: TAB_TYPE.OPENED_TABS,
@@ -53,7 +53,7 @@ export function fetchOpenTabs(): TabState {
 }
 
 export function fetchRecentlyClosedTabs(): TabState {
-  const data = execSync(`${MOZEIDON} tabs --json --closed`);
+  const data = execSync(`${MOZEIDON} tabs --closed`);
   const parsedTabs: { data: MozeidonTab[] } = JSON.parse(data.toString() || TABS_FALLBACK);
   return {
     type: TAB_TYPE.RECENTLY_CLOSED,
@@ -73,7 +73,7 @@ export function fetchRecentlyClosedTabs(): TabState {
 }
 
 export async function* getBookmarksChunks() {
-  const command = spawn(`${MOZEIDON} bookmarks --json`, { shell: true });
+  const command = spawn(`${MOZEIDON} bookmarks -c 1000`, { shell: true });
   const chunks = readline.createInterface({ input: command.stdout });
   for await (const chunk of chunks) {
     const { data: parsedBookmarks }: { data: MozeidonBookmark[] } = JSON.parse(chunk);

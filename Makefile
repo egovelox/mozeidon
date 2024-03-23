@@ -1,5 +1,5 @@
 build-background:
-	cd background && yarn run build
+	cd background && ./build.sh
 build-native-app:
 	cd native-app && go build
 build-cli:

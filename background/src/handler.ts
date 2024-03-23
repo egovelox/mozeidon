@@ -18,8 +18,6 @@ export async function handler(port: Port, cmd: Command) {
       return await newTab(port, cmd)
     case CommandName.GET_BOOKMARKS:
       return getBookmarks(port, cmd)
-    default: console.error("Cannot handle unknown command: ", cmd.command)
   }
   
-
 }

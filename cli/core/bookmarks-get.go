@@ -2,11 +2,12 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/egovelox/mozeidon/browser/core/models"
 )
 
-func (a *App) BookmarksGet() <-chan models.Bookmarks {
+func (a *App) BookmarksGet(max int64, chunkSize int64) <-chan models.Bookmarks {
 	channel := make(chan models.Bookmarks)
 
 	go func() {
@@ -14,6 +15,7 @@ func (a *App) BookmarksGet() <-chan models.Bookmarks {
 		for result := range a.browser.Send(
 			models.Command{
 				Command: "get-bookmarks",
+				Args:    fmt.Sprintf("%d:%d", max, chunkSize),
 			},
 		) {
 			bookmarks := models.Bookmarks{}

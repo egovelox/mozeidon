@@ -7,13 +7,27 @@ import { delay } from "../utils";
 
 const inMemoryBookmarkMap = new Map<string, browser.bookmarks.BookmarkTreeNode>
 
+export function getBookmarks(port: Port, { args }: Command) {
+  if (!args) { 
+    log("missing args in get-bookmarks")
+    return port.postMessage(Response.end()) 
+  }
 
-export function getBookmarks(port: Port, { command: _cmd }: Command) {
+  const receivedParams = args.split(":")
 
-  browser.bookmarks.getRecent(MAX_BOOKMARK_COUNT)
+  if (receivedParams.length < 2) {
+    log(`invalid args in get-bookmarks: received ${args}, expected a string combining two integers like "0:0"`)
+    return port.postMessage(Response.end()) 
+  }
+
+  const maxInput = parseInt(receivedParams[0])
+  const chunkSizeInput = parseInt(receivedParams[1])
+
+
+  browser.bookmarks.getRecent(maxInput ? maxInput : MAX_BOOKMARK_COUNT)
   .then(async (bookmarks) => {
     const startTime = Date.now()
-    const chunkSize = 3000;
+    const chunkSize = chunkSizeInput ? chunkSizeInput : MAX_BOOKMARK_COUNT;
     const chunks = [];
 
     // chunk bookmarks
@@ -69,7 +83,7 @@ class BookmarksGroup {
     return this
   }
   addParent(title: string) {
-    this.parentPath.push(title)
+    this.parentPath = [title, ...this.parentPath]
   }
 }
 
