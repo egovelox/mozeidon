@@ -1,16 +1,17 @@
-# Mozilla Firefox
+# Mozeidon
 
-Search and open Mozilla Firefox tabs from search query, opened tabs, bookmarks and history.
+Search and open Mozilla Firefox tabs from search query, opened tabs, recently-closed tabs, and bookmarks.
 
 New Tab search can be configured to search from the following sources:
 
-- Google(default)
+- Google (default)
 - DuckDuckGo
 - Bing
 - Brave
 - Baidu
 
-Limitations (due to limited AppleScript support in Firefox):
+This extension cannot work without prior installation of :
 
-- When searching open tabs, the session file is read and parsed to get the list of open tabs. This means that the list of open tabs will not be updated until the session file is updated. This is done by Firefox when it checkpoints itself or when Firefox is closed.
-- Selecting an open tab will result in cycling through open tabs until desired tab. This is due to the fact that AppleScript does not support opening a specific tab in Firefox.
+- the firefox addon, see [Mozeidon firefox-addon](https://addons.mozilla.org/en-US/firefox/addon/mozeidon/)
+
+- the firefox native-app, see [Mozeidon native-app](https://github.com/egovelox/mozeidon)

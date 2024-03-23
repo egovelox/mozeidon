@@ -19,3 +19,24 @@ export const SEARCH_ENGINES: { [T in typeof SEARCH_ENGINE]: string } = {
   Brave: `https://search.brave.com/search?q=`,
   DuckDuckGo: `https://duckduckgo.com/?q=`,
 };
+
+export const ErrorText = `
+## 🚨 Error 
+
+Something happened while trying to run your command.
+
+Please, ensure that:
+- \`\`Firefox\`\` browser is up and running
+- \`\`Mozeidon\`\` firefox-addon is up and running inside Firefox
+- \`\`Mozeidon native app\`\` is installed and configured in Firefox
+- \`\`Mozeidon CLI\`\` is installed and its file path is correct in the Raycast extension settings
+
+&nbsp;
+&nbsp;
+
+If you need help, you can read installation details on the [documentation page](https://github.com/egovelox/mozeidon?tab=readme-ov-file#mozeidon-firefox-addon)
+
+If it persists, you can post a new issue on the [issue page](https://github.com/egovelox/mozeidon/issues) 🙏
+`;
+
+export const DEFAULT_ERROR_TITLE = "An Error Occurred";

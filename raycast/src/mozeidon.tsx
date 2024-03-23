@@ -10,11 +10,13 @@ export default function Command(): ReactElement {
     {
       data: { tabs, type },
       isLoading,
+      errorView,
     },
     changeTabType,
     setData,
   ] = useMozeidonTabs();
 
+  if (errorView) return errorView as ReactElement;
   return (
     <List
       isLoading={isLoading}

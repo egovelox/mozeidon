@@ -17,17 +17,17 @@
       "name": "mozeidon",
       "type": "textfield",
       "required": true,
-      "title": "Mozeidon command file-path",
-      "description": "The command file-path of mozeidon",
+      "title": "Mozeidon cli file-path",
+      "description": "The file-path of mozeidon cli",
       "placeholder": "e.g /opt/homebrew/bin/mozeidon"
     },
     {
       "name": "firefox",
       "type": "textfield",
       "required": false,
-      "title": "Firefox open command file-path",
+      "title": "Firefox command",
       "default": "open -a firefox",
-      "description": "The command file-path to open firefox",
+      "description": "The shell command to get focus on Firefox",
       "placeholder": "e.g /opt/homebrew/bin/mozeidon"
     },
     {
@@ -66,7 +66,7 @@
       "name": "mozeidon",
       "title": "Mozeidon",
       "subtitle": "Mozilla Firefox add-on",
-      "description": "Search and switch to opened tabs, recently-closed, bookmarks, etc",
+      "description": "Search and switch to Firefox opened tabs, recently-closed, bookmarks, etc",
       "mode": "view"
     }
   ],
