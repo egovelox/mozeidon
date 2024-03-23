@@ -2,6 +2,14 @@
 
 Mozeidon is essentialy a CLI bringing back home Mozilla Firefox tabs and bookmarks. 
 
+Using the ``mozeidon`` command, you can : 
+- list all currently opened tabs
+- list recently-closed tabs
+- list current bookmarks
+- switch to a currently opened tab
+- open a new tab (empty tab or with target url)
+- close a currently opened tab
+
 <img width="1290" alt="mozeidon-cli" src="https://github.com/egovelox/mozeidon/assets/56078155/f3569595-03fd-4ea4-9922-5fb1acfd4a69">
 <br/><br/>
 
