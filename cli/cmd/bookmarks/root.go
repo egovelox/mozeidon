@@ -13,8 +13,17 @@ var maximum int64
 var chunk int64
 
 var BookmarksCmd = &cobra.Command{
-	Use:  "bookmarks",
-	Long: "Get all bookmarks from Mozilla Firefox.\n You may get items \n - using a go-template with -t \n - by chunks using -c",
+	Use:   "bookmarks",
+	Short: "Get bookmarks",
+	Long: "Get bookmarks" +
+		"\n\n" +
+		"You may get items" +
+		"\n" +
+		" - specifying a maximum with -m" +
+		"\n" +
+		" - by chunks using -c" +
+		"\n" +
+		" - using a go-template with -t",
 	Run: func(_ *cobra.Command, _ []string) {
 		app, err := core.NewApp()
 		if err != nil {

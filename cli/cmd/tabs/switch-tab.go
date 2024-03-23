@@ -12,9 +12,18 @@ var open bool
 
 var SwitchTabCmd = &cobra.Command{
 	Use:   "switch",
-	Short: "switch to a tab by id",
-	Long:  ``,
-	Args:  cobra.ExactArgs(1),
+	Short: `Switch to a given tab`,
+	Long: "Switch to a given tab by id" +
+		"\n\n" +
+		"Required argument:" +
+		"\n" +
+		"A string composed of {windowId}:{tabId}" +
+		"\n" +
+		"e.g" +
+		"\n" +
+		"mozeidon tabs switch 1:100" +
+		"\n\n",
+	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		app, err := core.NewApp()
 		if err != nil {
