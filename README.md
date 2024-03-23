@@ -5,12 +5,12 @@ Mozeidon is essentially a CLI to handle Mozilla Firefox tabs and bookmarks.
 It's all free, and was developed for fun 🤓.
 
 Using the ``mozeidon`` command, you can : 
-- list all currently opened tabs
+- list all currently open tabs
 - list recently-closed tabs
 - list current bookmarks
-- switch to a currently opened tab
+- switch to a currently open tab
 - open a new tab (empty tab or with target url)
-- close a currently opened tab
+- close a currently open tab
 
 <img width="1512" alt="mozeidon-cli" src="https://github.com/egovelox/mozeidon/assets/56078155/2cfd04c2-d066-49fa-973e-c389e90b1f37">
 <br/><br/>
@@ -150,7 +150,7 @@ mozeidon tabs get --go-template \
 
 This more advanced script will allow to :
 - open a new tab (empty or with search query)
-- switch to a currently opened tab
+- switch to a currently open tab
 - close one or many tabs
 
 ```bash
