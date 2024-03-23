@@ -83,7 +83,11 @@ cd cli && go build
 mozeidon tabs --template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\\u001b[38;5;109m"}} {{.Domain}}{{"\\033[0m"}} {{.Title}}{{"\n"}}{{end}}'
 ```
 
-### Customized tabs output with a pipe into ``fzf``: by choosing one, it will open it in your browser :
+### Customized tabs output with a pipe into ``fzf``
+
+If you've installed [fzf](https://github.com/junegunn/fzf) you can use it as a kind of UI for mozeidon CLI.
+
+The below `bash` command shows how `fzf` can be used to select a tab, and to open it in your browser.
 
 ```bash
 mozeidon tabs -t '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\u001b[38;5;109m"}} {{.Domain}}{{"\033[0m"}} {{.Title}}{{"\n"}}{{end}}' \
