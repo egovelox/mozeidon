@@ -24,7 +24,29 @@ Of course you need to install each of these components :
 
 ## Mozeidon addon
 
-## Mozeidon-app
+The mozeidon addon for Mozilla Firefox can be found here :
+
+[https://addons.mozilla.org/en-US/firefox/addon/mozeidon](https://addons.mozilla.org/en-US/firefox/addon/mozeidon)
+
+## Mozeidon native-app
+
+The mozeidon native-app will allow the add-on to interact with the mozeidon CLI (see below).
+
+As every native-app, you need to allow it into your browser :
+
+
+```json
+{
+  "name": "mozeidon",
+  "description": "Native messaging add-on to interact with your browser",
+  "path": "/YOUR_INSTALLATION_PATH/mozeidon/native-app/mozeidon-app",
+  "type": "stdio",
+  "allowed_extensions": [
+    "mozeidon-addon@egovelox.com"
+  ]
+}
+```
+
 
 ## Mozeidon CLI
 
