@@ -64,13 +64,16 @@ brew tap egovelox/homebrew-mozeidon ;
 brew install egovelox/mozeidon/mozeidon-native-app ;
 ```
 
-Otherwise, you may need to build the binary yourself for your platform :
-Clone the [mozeidon native-app repository](https://github.com/egovelox/mozeidon-native-app) and run :
+Otherwise, you may download the binary from the [release page](https://github.com/egovelox/mozeidon-native-app/releases).
+
+If no release matches your platform, you can build the binary yourself:
 ```bash
+git clone https://github.com/egovelox/mozeidon-native-app.git ;
+
 cd mozeidon-native-app && go build
 ```
 
-As a standard native-app, it has to be referenced it into your Firefox configuration.
+As a firefox native-app, it has to be referenced into your Firefox configuration.
 
 ### Referencing the native-app into your Firefox configuration
 
@@ -92,12 +95,12 @@ Note: depending on your installation, you may need to replace the value in ``"pa
 }
 ```
 
-Now the mozeidon add-on will be allowed to interact with the mozeidon native-app.
+Now the Mozeidon firefox-addon will be able to interact with the Mozeidon native-app.
 
 Note : 
 For other OS than ``MacOS``, please check the [Mozilla documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_manifests#manifest_location) to find the correct location of the Firefox ``NativeMessagingHosts`` directory.
 
-Then, you should be able to use the Mozeidon CLI or the Raycast extension.
+At last, you should be able to use the Mozeidon CLI or the Raycast extension.
 
 ## Mozeidon CLI
 
@@ -110,12 +113,16 @@ brew tap egovelox/homebrew-mozeidon ;
 brew install egovelox/mozeidon/mozeidon ;
 ```
 
-Otherwise you need to build the binary yourself for your platform :
+Otherwise, you may download the binary from the [release page](https://github.com/egovelox/mozeidon/releases).
+
+If no release matches your platform, you can build the binary yourself:
 ```bash
-cd cli && go build
+git clone https://github.com/egovelox/mozeidon.git ;
+
+cd mozeidon/cli && go build
 ```
 
-### How to use the CLI with ``go-template`` syntax for customized output :
+### How to use the Mozeidon CLI with ``go-template`` syntax for customized output :
 
 ```bash
 mozeidon tabs get --go-template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\\u001b[38;5;109m"}} {{.Domain}}{{"\\033[0m"}} {{.Title}}{{"\n"}}{{end}}'
@@ -196,4 +203,25 @@ open new tab [C-o]'\
 ## Raycast extension
 
 TODO
+
+
+## Releases
+
+Various releases of the Mozeidon CLI can be found on the [releases page](https://github.com/egovelox/mozeidon/releases).
+
+Releases are managed with github-actions and [goreleaser](https://github.com/goreleaser/goreleaser).
+
+A release will be auto-published when a new git tag is pushed,
+e.g :
+
+```bash
+git clone https://github.com/egovelox/mozeidon.git && cd mozeidon;
+
+git tag -a v2.0.0 -m "A new mozeidon (CLI) release"
+
+git push origin v2.0.0
+```
+
+
+
 
