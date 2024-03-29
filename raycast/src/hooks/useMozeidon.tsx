@@ -1,8 +1,9 @@
 import { SearchResult, TabState } from "../interfaces";
-import { useState, Dispatch, SetStateAction, ReactElement } from "react";
+import { useState, Dispatch, SetStateAction, ReactElement, useEffect } from "react";
 import { TAB_TYPE } from "../constants";
-import { fetchOpenTabs, fetchRecentlyClosedTabs, getBookmarksChunks } from "../actions";
-import { Error } from "../components/Error";
+import { fetchOpenTabs, fetchRecentlyClosedTabs, getBookmarksChunks, isFirefoxRunning, startFirefox } from "../actions";
+import { UnknownError } from "../components/Error";
+import { closeMainWindow, PopToRootType } from "@raycast/api";
 
 /*
 use TAB.TYPE.NONE as initial state
@@ -14,11 +15,30 @@ let tabState: TabState = { type: TAB_TYPE.NONE, tabs: [] };
 export function useMozeidonTabs(): [
   SearchResult<TabState>,
   (chosenType?: TAB_TYPE) => Promise<void>,
-  Dispatch<SetStateAction<TabState>>
+  Dispatch<SetStateAction<TabState>>,
 ] {
   const [data, setData] = useState<TabState>(tabState);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorView, setErrorView] = useState<ReactElement | undefined>();
+
+  useEffect(() => {
+    const check = async () => {
+      setIsLoading(true);
+      const isBrowserRunning = await isFirefoxRunning();
+      if (isBrowserRunning) {
+        setIsLoading(false);
+      } else {
+        await startFirefox();
+        await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
+      }
+    };
+
+    try {
+      check();
+    } catch (error) {
+      setErrorView(<UnknownError />);
+    }
+  }, []);
 
   async function changeTabType(chosenType?: TAB_TYPE) {
     if (isLoading) return;
@@ -35,7 +55,6 @@ export function useMozeidonTabs(): [
         case TAB_TYPE.BOOKMARKS:
           /*
         do not fetch if already fetched
-        this is the way to ensure that the isLoading + storeValue logic is working
         */
           if (tabState.type === TAB_TYPE.BOOKMARKS) break;
           setIsLoading(true);
@@ -55,7 +74,7 @@ export function useMozeidonTabs(): [
           break;
       }
     } catch (error) {
-      setErrorView(<Error />);
+      setErrorView(<UnknownError />);
     }
   }
 

@@ -15,7 +15,7 @@ export class Tab {
     public readonly title: string,
     public readonly url: string,
     public readonly domain: string,
-    public readonly active: boolean
+    public readonly active: boolean,
   ) {}
 
   urlWithoutScheme(): string {

@@ -9,9 +9,10 @@ export enum TAB_TYPE {
   OPENED_TABS = "Opened Tabs",
   RECENTLY_CLOSED = "Recently Closed",
   BOOKMARKS = "Bookmarks",
-  // only for initial state
   NONE = "",
 }
+export const MOZEIDON_DOCUMENTATION_URL =
+  "https://github.com/egovelox/mozeidon?tab=readme-ov-file#mozeidon-firefox-addon";
 export const SEARCH_ENGINES: { [T in typeof SEARCH_ENGINE]: string } = {
   Google: `https://google.com/search?q=`,
   Bing: `https://www.bing.com/search?q=`,
@@ -20,7 +21,7 @@ export const SEARCH_ENGINES: { [T in typeof SEARCH_ENGINE]: string } = {
   DuckDuckGo: `https://duckduckgo.com/?q=`,
 };
 
-export const ErrorText = `
+export const UnknownErrorText = `
 ## 🚨 Error 
 
 Something happened while trying to run your command.
@@ -34,9 +35,9 @@ Please, ensure that:
 &nbsp;
 &nbsp;
 
-If you need help, you can read installation details on the [documentation page](https://github.com/egovelox/mozeidon?tab=readme-ov-file#mozeidon-firefox-addon)
+If you need help, you can read installation details on the [documentation page](${MOZEIDON_DOCUMENTATION_URL})
 
-If it persists, you can post a new issue on the [issue page](https://github.com/egovelox/mozeidon/issues) 🙏
+If it persists, you can open a new issue on the [issue page](https://github.com/egovelox/mozeidon/issues) 🙏
 `;
 
 export const DEFAULT_ERROR_TITLE = "An Error Occurred";

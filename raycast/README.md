@@ -10,8 +10,10 @@ New Tab search can be configured to search from the following sources:
 - Brave
 - Baidu
 
-This extension cannot work without prior installation of :
+This raycast extension cannot work without prior installation of :
 
-- the firefox addon, see [Mozeidon firefox-addon](https://addons.mozilla.org/en-US/firefox/addon/mozeidon/)
+- Mozeidon firefox add-on, see [Mozeidon firefox-addon](https://addons.mozilla.org/en-US/firefox/addon/mozeidon/)
 
-- the firefox native-app, see [Mozeidon native-app](https://github.com/egovelox/mozeidon)
+- Mozeidon native-messaging app, see [Mozeidon native-app](https://github.com/egovelox/mozeidon-native-app/)
+
+- Mozeidon CLI, see [Mozeidon CLI](https://github.com/egovelox/mozeidon?tab=readme-ov-file#mozeidon-cli)
