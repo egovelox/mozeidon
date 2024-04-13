@@ -206,6 +206,8 @@ For MacOS users only : see [the Mozeidon Raycast extension](https://www.raycast.
 
 Note that you'll first need to complete the installation of Mozeidon components (firefox browser extension, native-app and CLI).
 
+![mozeidon-4](https://github.com/egovelox/mozeidon/assets/56078155/a3b8d378-7fe2-4062-9722-15b4cf7f9d6f)
+
 ## Releases
 
 Various releases of the Mozeidon CLI can be found on the [releases page](https://github.com/egovelox/mozeidon/releases).
