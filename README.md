@@ -202,8 +202,9 @@ open new tab [C-o]'\
 
 ## Raycast extension
 
-TODO
+For MacOS users only : see [the Mozeidon Raycast extension](https://www.raycast.com/egovelox/mozeidon).
 
+Note that you'll first need to complete the installation of Mozeidon components (firefox browser extension, native-app and CLI).
 
 ## Releases
 
