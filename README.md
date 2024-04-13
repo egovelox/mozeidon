@@ -2,15 +2,25 @@
 
 Mozeidon is essentially a CLI to handle Mozilla Firefox tabs and bookmarks. 
 
-It's all free, and was developed for fun 🤓.
+Here you'll find :
+- a guide to complete the installation of the mozeidon native-app and mozeidon CLI.
+  - install the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon)
+  - install the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app)
+  - install the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)
+- [examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#how-to-use-the-mozeidon-cli-with-go-template-syntax-for-customized-output-) of the CLI usage (including integration with fzf and fzf-tmux) 
+- [a Raycast extension](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) built around Mozeidon (for MacOS only)
+
+All the code is available here as open-source. You can be sure that :
+- your browsing data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
+- at any time, stopping or removing the ``mozeidon firefox addon extension`` will stop or remove all related processes on your machine.
 
 Using the ``mozeidon`` command, you can : 
-- list all currently open tabs
+- list all currently opened tabs
 - list recently-closed tabs
 - list current bookmarks
-- switch to a currently open tab
+- switch to a currently opened tab
 - open a new tab (empty tab or with target url)
-- close a currently open tab
+- close a currently opened tab
 
 <img width="1512" alt="mozeidon-cli" src="https://github.com/egovelox/mozeidon/assets/56078155/2cfd04c2-d066-49fa-973e-c389e90b1f37">
 <br/><br/>
@@ -18,14 +28,6 @@ Using the ``mozeidon`` command, you can :
 <img width="1512" alt="mozeidon-cli-2" src="https://github.com/egovelox/mozeidon/assets/56078155/9ba5c99b-0436-433c-9b73-427f2b3c897f">
 <br/><br/>
 
-All the code is available here as open-source. You can review it easily and be sure that : 
-- your browsing data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
-- at any time, stopping or removing the ``mozeidon firefox addon extension`` will stop or remove all related processes on your machine.
-
-Here you'll find :
-- a guide to complete the installation of the mozeidon native-app and mozeidon CLI.
-- examples of the CLI usage (including integration with fzf and fzf-tmux) 
-- a Raycast extension built around Mozeidon (for MacOS only)
 
 ## Architecture
 
