@@ -1,20 +1,20 @@
 # Mozeidon 
 
-Mozeidon is essentially a CLI to handle Mozilla Firefox tabs and bookmarks. 
+Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) tabs and bookmarks. 
 
 Here you'll find :
-- a guide to complete the installation of the mozeidon native-app and mozeidon CLI.
+- a guide to complete the installation of the mozeidon components (see [architecture](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#architecture)).
   - install the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon)
   - install the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app)
   - install the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)
-- [examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#how-to-use-the-mozeidon-cli-with-go-template-syntax-for-customized-output-) of the CLI usage (including integration with fzf and fzf-tmux) 
+- [advanced examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#how-to-use-the-mozeidon-cli-with-go-template-syntax-for-customized-output-) of the CLI usage (including integration with fzf and fzf-tmux) 
 - [a Raycast extension](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) built around Mozeidon (for MacOS only)
 
 All the code is available here as open-source. You can be sure that :
 - your browsing data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
 - at any time, stopping or removing the ``mozeidon firefox addon extension`` will stop or remove all related processes on your machine.
 
-Using the ``mozeidon`` command, you can : 
+Using the ``mozeidon`` CLI, you can : 
 - list all currently opened tabs
 - list recently-closed tabs
 - list current bookmarks
