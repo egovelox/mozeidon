@@ -7,7 +7,7 @@ Here you'll find :
   - install the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon)
   - install the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app)
   - install the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)
-- [advanced examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#how-to-use-the-mozeidon-cli-with-go-template-syntax-for-customized-output-) of the CLI usage (including integration with fzf and fzf-tmux) 
+- [advanced examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#examples) of the CLI usage (including integration with fzf and fzf-tmux) 
 - [a Raycast extension](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) built around Mozeidon (for MacOS only)
 
 All the code is available here as open-source. You can be sure that :
@@ -37,17 +37,17 @@ Using the ``mozeidon`` CLI, you can :
 
 Mozeidon is built on ipc and native-messaging protocols, using the following components :
 
-- the Mozeidon firefox-addon, a JS script running in the Mozilla browser, receives commands and sends back data (i.e tabs, bookmarks, etc) by leveraging various browser APIs.
+- the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon), a JS script running in the Mozilla browser, receives commands and sends back data (i.e tabs, bookmarks, etc) by leveraging various browser APIs.
 
-- the Mozeidon native-app, a Go program, interacts with the Mozeidon firefox-addon. It sends commands to, and receive data from the browser addon - via native-messaging protocol.
+- the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app), a Go program, interacts with the Mozeidon firefox-addon. It sends commands to, and receive data from the browser addon - via native-messaging protocol.
 
-- the Mozeidon CLI, another Go program, interacts with the Mozeidon native-app. It sends commands to and receive data from the native-app - via ipc protocol.
+- the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli), another Go program, interacts with the Mozeidon native-app. It sends commands to and receive data from the native-app - via ipc protocol.
 
 
 Of course you need to install each of these components :
-- the Mozeidon firefox-addon
-- the Mozeidon native-app
-- the Mozeidon CLI
+- the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon)
+- the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app)
+- the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)
 
 ## Mozeidon firefox-addon
 
@@ -57,7 +57,7 @@ The mozeidon addon for Mozilla Firefox can be found here :
 
 ## Mozeidon native-app
 
-The [mozeidon native-app](https://github.com/egovelox/mozeidon-native-app), a very simple ipc server written in ``go``, will allow the mozeidon add-on to receive commands from and send responses to the mozeidon CLI (see below).
+The [mozeidon native-app](https://github.com/egovelox/mozeidon-native-app), a very simple ipc server written in ``go``, will allow the mozeidon add-on to receive commands from and send responses to the mozeidon CLI ([see below](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)).
 
 On MacOS or Linux, you can install it using ``homebrew`` :
 ```bash
@@ -74,7 +74,7 @@ git clone https://github.com/egovelox/mozeidon-native-app.git ;
 
 cd mozeidon-native-app && go build
 ```
-
+<br/>
 As a firefox native-app, it has to be referenced into your Firefox configuration.
 
 ### Referencing the native-app into your Firefox configuration
@@ -102,11 +102,11 @@ Now the Mozeidon firefox-addon will be able to interact with the Mozeidon native
 Note : 
 For other OS than ``MacOS``, please check the [Mozilla documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_manifests#manifest_location) to find the correct location of the Firefox ``NativeMessagingHosts`` directory.
 
-At last, you should be able to use the Mozeidon CLI or the Raycast extension.
+As a last step, you need to install the Mozeidon CLI.
 
 ## Mozeidon CLI
 
-The Mozeidon CLI is written in ``go``. 
+The Mozeidon CLI is a lightweight CLI written in ``go``. 
 
 On MacOS or Linux, you can install it using ``homebrew`` :
 ```bash
@@ -123,6 +123,8 @@ git clone https://github.com/egovelox/mozeidon.git ;
 
 cd mozeidon/cli && go build
 ```
+
+## Examples 
 
 ### How to use the Mozeidon CLI with ``go-template`` syntax for customized output :
 
