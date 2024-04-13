@@ -208,7 +208,7 @@ open new tab [C-o]'\
 
 For MacOS users only : see [the Mozeidon Raycast extension](https://www.raycast.com/egovelox/mozeidon).
 
-Note that you'll first need to complete the installation of Mozeidon components (firefox browser extension, native-app and CLI).
+Note that you'll first need to complete the installation of Mozeidon components ([Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon), [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app) and [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)).
 
 ![mozeidon-4](https://github.com/egovelox/mozeidon/assets/56078155/a3b8d378-7fe2-4062-9722-15b4cf7f9d6f)
 
