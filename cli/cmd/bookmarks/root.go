@@ -31,7 +31,7 @@ var BookmarksCmd = &cobra.Command{
 			return
 		}
 		if len(template) > 0 {
-			app.BookmarksTemplate(template)
+			app.BookmarksTemplate(template, maximum, chunk)
 		} else {
 			app.BookmarksJson(maximum, chunk)
 		}

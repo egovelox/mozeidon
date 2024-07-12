@@ -129,6 +129,14 @@ cd mozeidon/cli && go build
 ### How to use the Mozeidon CLI with ``go-template`` syntax for customized output :
 
 ```bash
+# get maximum 10 of latest bookmarks, title and url
+
+mozeidon bookmarks -m 10 --go-template '{{range .Items}}{{.Title}} {{.Url}}{{"\n"}}{{end}}'
+```
+
+```bash
+# get opened tabs, with 📌 icon if pinned
+
 mozeidon tabs get --go-template '{{range .Items}}{{.WindowId}}:{{.Id}} {{.Url}} {{if .Pinned}}📌{{else}}🦊{{end}} {{"\\u001b[38;5;109m"}} {{.Domain}}{{"\\033[0m"}} {{.Title}}{{"\n"}}{{end}}'
 ```
 

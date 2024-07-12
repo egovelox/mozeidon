@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	goTemplates "text/template"
@@ -9,11 +10,12 @@ import (
 	"github.com/egovelox/mozeidon/browser/core/models"
 )
 
-func (a *App) BookmarksTemplate(template string) {
+func (a *App) BookmarksTemplate(template string, max int64, chunkSize int64) {
 
 	for response := range a.browser.Send(
 		models.Command{
 			Command: "get-bookmarks",
+			Args:    fmt.Sprintf("%d:%d", max, chunkSize),
 		},
 	) {
 
