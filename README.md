@@ -220,6 +220,12 @@ Note that you'll first need to complete the installation of Mozeidon components 
 
 ![mozeidon-4](https://github.com/egovelox/mozeidon/assets/56078155/a3b8d378-7fe2-4062-9722-15b4cf7f9d6f)
 
+## MacOS swift app-agent
+
+If you ask for something faster than Raycast ( which I find quite slow to trigger the search list ),  
+you might take a look at this macOS agent-app :  
+[mozeidon-macos-ui](https://github.com/egovelox/mozeidon-macos-ui)
+
 ## Releases
 
 Various releases of the Mozeidon CLI can be found on the [releases page](https://github.com/egovelox/mozeidon/releases).
