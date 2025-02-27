@@ -1,4 +1,4 @@
-package bookmarks
+package history
 
 import (
 	"fmt"
@@ -12,14 +12,14 @@ var template string
 var maximum int64
 var chunk int64
 
-var BookmarksCmd = &cobra.Command{
-	Use:   "bookmarks",
-	Short: "Get bookmarks",
-	Long: "Get bookmarks" +
+var HistoryCmd = &cobra.Command{
+	Use:   "history",
+	Short: "Get history",
+	Long: "Get history" +
 		"\n\n" +
 		"You may get items" +
 		"\n" +
-		" - with a given maximum with -m" +
+		" - with a given maximum M with -m M" +
 		"\n" +
 		" - and/or divided by chunks of a given number of items using -c" +
 		"\n" +
@@ -31,18 +31,18 @@ var BookmarksCmd = &cobra.Command{
 			return
 		}
 		if len(template) > 0 {
-			app.BookmarksTemplate(template, maximum, chunk)
+			app.HistoryTemplate(template, maximum, chunk)
 		} else {
-			app.BookmarksJson(maximum, chunk)
+			app.HistoryJson(maximum, chunk)
 		}
 	},
 }
 
 func init() {
-	BookmarksCmd.Flags().
+	HistoryCmd.Flags().
 		StringVarP(&template, "go-template", "t", "", "go-template to customize output")
-	BookmarksCmd.Flags().
+	HistoryCmd.Flags().
 		Int64VarP(&maximum, "max", "m", 0, "the maximum number of items to return")
-	BookmarksCmd.Flags().
+	HistoryCmd.Flags().
 		Int64VarP(&chunk, "chunk", "c", 0, "the number of items a chunk can contain")
 }
