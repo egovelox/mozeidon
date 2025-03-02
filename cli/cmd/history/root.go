@@ -19,11 +19,11 @@ var HistoryCmd = &cobra.Command{
 		"\n\n" +
 		"You may get items" +
 		"\n" +
-		" - with a given maximum M with -m M" +
+		" - with a given maximum M using -m M" +
 		"\n" +
-		" - and/or divided by chunks of a given number of items using -c" +
+		" - and/or divided by chunks of a given number N of items using -c N" +
 		"\n" +
-		" - using a go-template with -t",
+		" - using a go-template T with -t T",
 	Run: func(_ *cobra.Command, _ []string) {
 		app, err := core.NewApp()
 		if err != nil {
