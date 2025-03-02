@@ -18,5 +18,5 @@
   "browser_action": {
     "default_icon": "icons/trident.svg"
   },
-  "permissions": ["nativeMessaging", "tabs", "sessions", "bookmarks"]
+  "permissions": ["nativeMessaging", "tabs", "sessions", "bookmarks", "history"]
 }

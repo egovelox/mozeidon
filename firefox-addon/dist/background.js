@@ -54,7 +54,7 @@ function listen(port) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DEBUG = exports.ADDON_NAME = void 0;
 exports.ADDON_NAME = "mozeidon";
-exports.DEBUG = false;
+exports.DEBUG = true;
 
 
 /***/ }),
@@ -64,10 +64,11 @@ exports.DEBUG = false;
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.MAX_BOOKMARK_COUNT = exports.BOOKMARK_TYPE = exports.ROOT_BOOKMARK_ID = void 0;
+exports.MAX_HISTORY_ITEMS_COUNT = exports.MAX_BOOKMARK_COUNT = exports.BOOKMARK_TYPE = exports.ROOT_BOOKMARK_ID = void 0;
 exports.ROOT_BOOKMARK_ID = 'toolbar_____';
 exports.BOOKMARK_TYPE = 'bookmark';
 exports.MAX_BOOKMARK_COUNT = 100000;
+exports.MAX_HISTORY_ITEMS_COUNT = 100000;
 
 
 /***/ }),
@@ -89,6 +90,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.handler = void 0;
 const command_1 = __webpack_require__(238);
 const bookmarks_1 = __webpack_require__(972);
+const history_1 = __webpack_require__(677);
+const logger_1 = __webpack_require__(614);
+const response_1 = __webpack_require__(392);
 const tabs_1 = __webpack_require__(721);
 function handler(port, cmd) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -105,6 +109,11 @@ function handler(port, cmd) {
                 return yield (0, tabs_1.newTab)(port, cmd);
             case command_1.CommandName.GET_BOOKMARKS:
                 return (0, bookmarks_1.getBookmarks)(port, cmd);
+            case command_1.CommandName.GET_HISTORY_ITEMS:
+                return (0, history_1.getHistory)(port, cmd);
+            default:
+                (0, logger_1.log)("unknown command received in handler");
+                return port.postMessage(response_1.Response.end());
         }
     });
 }
@@ -140,6 +149,7 @@ var CommandName;
 (function (CommandName) {
     CommandName["CLOSE_TABS"] = "close-tabs";
     CommandName["GET_BOOKMARKS"] = "get-bookmarks";
+    CommandName["GET_HISTORY_ITEMS"] = "get-history-items";
     CommandName["GET_RECENTLY_CLOSED_TABS"] = "get-recently-closed-tabs";
     CommandName["GET_TABS"] = "get-tabs";
     CommandName["NEW_TAB"] = "new-tab";
@@ -311,6 +321,74 @@ function getBmParentTitles(bms) {
         return bookmarks;
     });
 }
+
+
+/***/ }),
+
+/***/ 677:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getHistory = void 0;
+const logger_1 = __webpack_require__(614);
+const response_1 = __webpack_require__(392);
+const constants_1 = __webpack_require__(921);
+const utils_1 = __webpack_require__(185);
+function getHistory(port, { args }) {
+    if (!args) {
+        (0, logger_1.log)("missing args in get-history");
+        return port.postMessage(response_1.Response.end());
+    }
+    const receivedParams = args.split(":");
+    if (receivedParams.length < 2) {
+        (0, logger_1.log)(`invalid args in get-history: received ${args}, expected a string combining two integers like "0:0"`);
+        return port.postMessage(response_1.Response.end());
+    }
+    const maxInput = parseInt(receivedParams[0]);
+    const chunkSizeInput = parseInt(receivedParams[1]);
+    (0, logger_1.log)(`chunkSize ${chunkSizeInput}`);
+    (0, logger_1.log)(`maxInput ${maxInput}`);
+    browser.history.search({
+        text: "",
+        startTime: 0,
+        maxResults: maxInput ? maxInput : constants_1.MAX_HISTORY_ITEMS_COUNT,
+    }).then((historyItems) => __awaiter(this, void 0, void 0, function* () {
+        (0, logger_1.log)(`got ${historyItems.length} history items \n ${JSON.stringify(historyItems)}`);
+        const startTime = Date.now();
+        const chunkSize = chunkSizeInput ? chunkSizeInput : constants_1.MAX_HISTORY_ITEMS_COUNT;
+        const chunks = [];
+        for (let i = 0; i < historyItems.length; i += chunkSize) {
+            const chunk = historyItems.slice(i, i + chunkSize);
+            chunks.push(chunk);
+        }
+        for (const chunk of chunks) {
+            const items = chunk.map(item => {
+                var _a, _b;
+                return ({
+                    id: item.id,
+                    title: (_a = item.title) !== null && _a !== void 0 ? _a : 'missing title',
+                    url: (_b = item.url) !== null && _b !== void 0 ? _b : 'https://developer.mozilla.org',
+                });
+            });
+            port.postMessage(response_1.Response.data(items));
+        }
+        const endTime = Date.now();
+        (0, logger_1.log)(`sending back historyItems in ${endTime - startTime} ms`);
+        yield (0, utils_1.delay)(100);
+        port.postMessage(response_1.Response.end());
+    }));
+}
+exports.getHistory = getHistory;
 
 
 /***/ }),
