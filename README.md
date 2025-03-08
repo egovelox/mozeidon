@@ -1,22 +1,21 @@
 # Mozeidon 
 
-Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) tabs and bookmarks. 
+Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) OR [Google Chrome](https://www.google.com/chrome) tabs, history, and bookmarks. 
 
 Here you'll find :
-- a guide to complete the installation of the mozeidon components (see [architecture](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#architecture)).
-  - install the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon)
-  - install the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app)
-  - install the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)
-- [advanced examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#examples) of the CLI usage (including integration with fzf and fzf-tmux) 
-- [a Raycast extension](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) built around Mozeidon (for MacOS only)
+- a guide to complete the [installation](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#installation) of the mozeidon components (see [architecture](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#architecture)).
+- [advanced examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#examples) of the CLI usage (including integration with `fzf` and `fzf-tmux`) 
+- [a Raycast extension](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) built around Mozeidon CLI (for MacOS only)
+- [a MacOS native app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#macos-swift-app-agent) built around Mozeidon CLI (for MacOS only)
 
 All the code is available here as open-source. You can be sure that :
 - your browsing data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
-- at any time, stopping or removing the ``mozeidon firefox addon extension`` will stop or remove all related processes on your machine.
+- at any time, stopping or removing the mozeidon firefox (or chrome) addon extension will stop or remove all related processes on your machine.
 
 Using the ``mozeidon`` CLI, you can : 
 - list all currently opened tabs
 - list recently-closed tabs
+- list current history
 - list current bookmarks
 - switch to a currently opened tab
 - open a new tab (empty tab or with target url)
@@ -37,15 +36,17 @@ Using the ``mozeidon`` CLI, you can :
 
 Mozeidon is built on ipc and native-messaging protocols, using the following components :
 
-- the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon), a JS script running in the Mozilla browser, receives commands and sends back data (i.e tabs, bookmarks, etc) by leveraging various browser APIs.
+- the [Mozeidon firefox or chrome add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon), a JS script running in the Mozilla (or Chrome) browser, receives commands and sends back data (i.e tabs, bookmarks, etc) by leveraging various browser APIs.
 
-- the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app), a Go program, interacts with the Mozeidon firefox-addon. It sends commands to, and receive data from the browser addon - via native-messaging protocol.
+- the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app), a Go program, interacts with the Mozeidon firefox-addon. It sends commands to, and receive data from the browser addon - via [native-messaging](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/Native_messaging) protocol.
 
 - the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli), another Go program, interacts with the Mozeidon native-app. It sends commands to and receive data from the native-app - via ipc protocol.
 
 
-Of course you need to install each of these components :
-- the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon)
+## Installation 
+
+You need to install at least 3 components :
+- the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon) or the [Mozeidon chrome add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-chrome-addon)
 - the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app)
 - the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)
 
@@ -54,6 +55,12 @@ Of course you need to install each of these components :
 The mozeidon addon for Mozilla Firefox can be found here :
 
 [https://addons.mozilla.org/en-US/firefox/addon/mozeidon](https://addons.mozilla.org/en-US/firefox/addon/mozeidon)
+
+## Mozeidon chrome-addon
+
+The mozeidon addon for Google Chrome can be found here :
+
+[https://chromewebstore.google.com/detail/mozeidon/lipjcjopdojfmfjmnponpjkkccbjoipe](https://chromewebstore.google.com/detail/mozeidon/lipjcjopdojfmfjmnponpjkkccbjoipe)
 
 ## Mozeidon native-app
 
@@ -75,7 +82,7 @@ git clone https://github.com/egovelox/mozeidon-native-app.git ;
 cd mozeidon-native-app && go build
 ```
 <br/>
-As a firefox native-app, it has to be referenced into your Firefox configuration.
+As a firefox native-app, it has to be referenced into your Firefox or Chrome configuration.
 
 ### Referencing the native-app into your Firefox configuration
 
@@ -102,7 +109,32 @@ Now the Mozeidon firefox-addon will be able to interact with the Mozeidon native
 Note : 
 For other OS than ``MacOS``, please check the [Mozilla documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_manifests#manifest_location) to find the correct location of the Firefox ``NativeMessagingHosts`` directory.
 
-As a last step, you need to install the Mozeidon CLI.
+As a last step, you need to install the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli).
+
+### Referencing the native-app into your Chrome configuration
+
+On ``MacOS``, first locate the ``~/Library/Application Support/Google/Chrome/NativeMessagingHosts`` directory (or create it if missing).
+
+Then create a ``mozeidon.json`` file, and copy into it the following ``json``.
+
+Note: depending on your installation, you may need to replace the value in ``"path"`` with the absolute path of the mozeidon-native-app.
+
+```json
+{
+  "name": "mozeidon",
+  "description": "Native messaging add-on to interact with your browser",
+  "path": "/opt/homebrew/bin/mozeidon-native-app",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://lipjcjopdojfmfjmnponpjkkccbjoipe/"]
+}
+```
+
+Now the Mozeidon chrome-addon will be able to interact with the Mozeidon native-app.
+
+Note : 
+For other OS than ``MacOS``, please check the [Chrome documentation](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#native-messaging-host-location) to find the correct location of the Chrome ``NativeMessagingHosts`` directory.
+
+As a last step, you need to install the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli).
 
 ## Mozeidon CLI
 
@@ -214,15 +246,20 @@ open new tab [C-o]'\
 
 ## Raycast extension
 
-For MacOS users only : see [the Mozeidon Raycast extension](https://www.raycast.com/egovelox/mozeidon).
+For MacOS and Firefox users only : see [the Mozeidon Raycast extension](https://www.raycast.com/egovelox/mozeidon).
+
+This Raycast extension will not work with Chrome browser. If you use MacOS, see [MacOS swift app-agent](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#macos-swift-app-agent)
 
 Note that you'll first need to complete the installation of Mozeidon components ([Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon), [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app) and [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)).
 
+Note that you cannot list **history items** with this Raycast extension : only **tabs**, **recently-closed tabs**, and **bookmarks**.
+
 ![mozeidon-4](https://github.com/egovelox/mozeidon/assets/56078155/a3b8d378-7fe2-4062-9722-15b4cf7f9d6f)
+
 
 ## MacOS swift app-agent
 
-If you ask for something faster than Raycast ( which I find quite slow to trigger the search list ),  
+If you ask for something faster than [Raycast](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) ( which I find quite slow to trigger the search list ),  
 you might take a look at this macOS agent-app :  
 [mozeidon-macos-ui](https://github.com/egovelox/mozeidon-macos-ui)
 
@@ -272,3 +309,9 @@ You should now be able to use the CLI with the local binary :
 ```bash
 ./mozeidon/cli/mozeidon tabs get
 ```
+
+## Notes
+
+For users who installed both the firefox-addon AND the chrome-addon, 
+`mozeidon` CLI will not work properly when both browser-extensions are activated at the same time.
+To overcome this limitation, keep one extension activated (e.g firefox-addon) and deactivate the other extension (e.g chrome-addon).
