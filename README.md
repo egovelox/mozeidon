@@ -243,6 +243,32 @@ git tag -a v2.0.0 -m "A new mozeidon (CLI) release"
 git push origin v2.0.0
 ```
 
+## Local development setup
 
+We'll assume that you installed and followed the steps described in the `Mozeidon native-app` paragraph above.
+In fact, you rarely need to modify this component, it's just a message broker (see the `architecture` paragraph above ).
 
+First clone this repository.
 
+Then, build the firefox-extension locally :
+
+```bash
+cd mozeidon/firefox-addon; npm install; npm run build
+```
+
+Now don't forget to disable the current mozeidon extension, if it is enabled in your browser.  
+
+Then, in Firefox, via `Extensions > Debug Addons > Load Temporary Add-on`, select the manifest file in `firefox-addon/manifest.json`.  
+This will load the local extension into Firefox.
+
+From there, you may want to go further and build the CLI also :
+
+```bash
+cd mozeidon/cli; go build;
+```
+
+You should now be able to use the CLI with the local binary :
+
+```bash
+./mozeidon/cli/mozeidon tabs get
+```

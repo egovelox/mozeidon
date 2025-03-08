@@ -1,0 +1,18 @@
+{
+  "description": "Native messaging add-on to interact with tabs and bookmarks and history",
+  "manifest_version": 3,
+  "name": "mozeidon",
+  "version": "1.0",
+  "icons": {
+    "48": "assets/trident_48.png",
+    "16": "assets/trident_16.png",
+    "128": "assets/trident.png"
+  },
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "action": {
+    "default_icon": "assets/trident.png"
+  },
+  "permissions": ["nativeMessaging", "tabs", "sessions", "bookmarks", "history"]
+}
