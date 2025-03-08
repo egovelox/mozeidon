@@ -260,8 +260,10 @@ Note that you cannot list **history items** with this Raycast extension : only *
 ## MacOS swift app-agent
 
 If you ask for something faster than [Raycast](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) ( which I find quite slow to trigger the search list ),  
-you might take a look at this macOS agent-app :  
-[mozeidon-macos-ui](https://github.com/egovelox/mozeidon-macos-ui)
+you might take a look at this macOS app [mozeidon-macos-ui](https://github.com/egovelox/mozeidon-macos-ui)
+
+<img width="640" alt="mozeidon-macos-ui" src="https://github.com/user-attachments/assets/8590a296-3a4d-4287-b362-83804893710e" />
+
 
 ## Releases
 
