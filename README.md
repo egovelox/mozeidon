@@ -1,5 +1,8 @@
 # Mozeidon 
 
+TLDR; [Installation of the mozeidon-macos-ui with brew](https://github.com/egovelox/mozeidon-macos-ui?tab=readme-ov-file#homebrew)
+
+## Intro
 Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) OR [Google Chrome](https://www.google.com/chrome) tabs, history, and bookmarks. 
 
 Here you'll find :
