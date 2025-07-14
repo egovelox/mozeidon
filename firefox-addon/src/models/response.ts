@@ -10,5 +10,4 @@ export class Response {
   static end() {
     return new Response("end")
   }
-
 }

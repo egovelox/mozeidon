@@ -1,62 +1,61 @@
-import { MAX_BOOKMARK_COUNT, ROOT_BOOKMARK_ID } from "../constants";
-import { log } from "../logger";
+import { MAX_BOOKMARK_COUNT, ROOT_BOOKMARK_ID } from "../constants"
+import { log } from "../logger"
 import { Command } from "../models/command"
 import { Port } from "../models/port"
-import { Response } from "../models/response";
-import { delay } from "../utils";
+import { Response } from "../models/response"
+import { delay, isDefined } from "../utils"
 
-const inMemoryBookmarkMap = new Map<string, chrome.bookmarks.BookmarkTreeNode>
+const inMemoryBookmarkMap = new Map<string, chrome.bookmarks.BookmarkTreeNode>()
 
 export function getBookmarks(port: Port, { args }: Command) {
-  if (!args) { 
+  if (!args) {
     log("missing args in get-bookmarks")
-    return port.postMessage(Response.end()) 
+    return port.postMessage(Response.end())
   }
 
   const receivedParams = args.split(":")
 
   if (receivedParams.length < 2) {
-    log(`invalid args in get-bookmarks: received ${args}, expected a string combining two integers like "0:0"`)
-    return port.postMessage(Response.end()) 
+    log(
+      `invalid args in get-bookmarks: received ${args}, expected a string combining two integers like "0:0"`
+    )
+    return port.postMessage(Response.end())
   }
 
   const maxInput = parseInt(receivedParams[0])
   const chunkSizeInput = parseInt(receivedParams[1])
 
+  chrome.bookmarks
+    .getRecent(maxInput ? maxInput : MAX_BOOKMARK_COUNT)
+    .then(async (bookmarks) => {
+      const startTime = Date.now()
+      const chunkSize = chunkSizeInput ? chunkSizeInput : MAX_BOOKMARK_COUNT
+      const chunks = []
 
-  chrome.bookmarks.getRecent(maxInput ? maxInput : MAX_BOOKMARK_COUNT)
-  .then(async (bookmarks) => {
-    const startTime = Date.now()
-    const chunkSize = chunkSizeInput ? chunkSizeInput : MAX_BOOKMARK_COUNT;
-    const chunks = [];
+      // chunk bookmarks
+      for (let i = 0; i < bookmarks.length; i += chunkSize) {
+        const chunk = bookmarks.slice(i, i + chunkSize)
+        chunks.push(chunk)
+      }
 
-    // chunk bookmarks
-    for (let i = 0; i < bookmarks.length; i += chunkSize) {
-      const chunk = bookmarks.slice(i, i + chunkSize);
-      chunks.push(chunk);
-    }
+      // no parallelism, maintain order of bookmarks
+      for (const chunk of chunks) {
+        const bms = await processChunk(chunk)
+        port.postMessage(Response.data(bms))
+      }
 
-    // no parallelism, maintain order of bookmarks
-    for (const chunk of chunks) {
-      const bms = await processChunk(chunk)
-      port.postMessage(Response.data(bms))
-    }
-
-    const endTime = Date.now()
-    log(`sending back bookmarks in ${endTime - startTime} ms`)
-    // pause 100ms, or this end message may be received before the last chunk
-    await delay(100)
-    port.postMessage(Response.end());
-  })
+      const endTime = Date.now()
+      log(`sending back bookmarks in ${endTime - startTime} ms`)
+      // pause 100ms, or this end message may be received before the last chunk
+      await delay(100)
+      port.postMessage(Response.end())
+    })
 }
 
-
 async function processChunk(items: chrome.bookmarks.BookmarkTreeNode[]) {
-  const bms  = []
-  for (const p of (
-    await getBmParentTitles(
-      items.filter(item => item.url !== undefined)
-    )
+  const bms = []
+  for (const p of await getBmParentTitles(
+    items.filter((item) => isDefined(item.url))
   )) {
     bms.push({
       id: p.id,
@@ -87,59 +86,70 @@ class BookmarksGroup {
   }
 }
 
-
-type CompletedBookmarks = (chrome.bookmarks.BookmarkTreeNode & { parentPath: string })[]
+type CompletedBookmarks = (chrome.bookmarks.BookmarkTreeNode & {
+  parentPath: string
+})[]
 async function getBmParentTitles(bms: chrome.bookmarks.BookmarkTreeNode[]) {
   const bookmarks: CompletedBookmarks = []
 
-  // 1. first divide betweem complete and uncomplete bookmarks
-  // complete means the bookmark has no folder, 
+  // 1. first divide between complete and uncomplete bookmarks
+  // complete means the bookmark has no folder,
   const reducer = (
-    result: { complete: CompletedBookmarks, uncomplete: chrome.bookmarks.BookmarkTreeNode[]}, 
+    result: {
+      complete: CompletedBookmarks
+      uncomplete: chrome.bookmarks.BookmarkTreeNode[]
+    },
     current: chrome.bookmarks.BookmarkTreeNode
   ) => {
     if (current.parentId !== ROOT_BOOKMARK_ID) {
       result.uncomplete.push(current)
     } else {
-      result.complete.push({ ...current, parentPath: "" })
+      /*
+       * a complete bookmark has no folder,
+       * it's in the bookmark toolbar :
+       * we place it at the root path '/'
+       */
+      result.complete.push({ ...current, parentPath: "/" })
     }
     return result
   }
 
-  const { complete, uncomplete } = 
-    bms.reduce(reducer, { complete: [], uncomplete: [] });
+  const { complete, uncomplete } = bms.reduce(reducer, {
+    complete: [],
+    uncomplete: [],
+  })
 
   // 2. for uncomplete bookmarks : group them together if they share the same parent bookmark
-  let parentIdsMap: Map<string,BookmarksGroup> = uncomplete.reduce((bms, bm) => { 
-    if (bm.parentId) { 
-      const b = bms.get(bm.parentId)
-      if (b) {
-        b.addNew(bm)
-      } else {
-        bms.set(bm.parentId, new BookmarksGroup(bm))
+  let parentIdsMap: Map<string, BookmarksGroup> = uncomplete.reduce(
+    (bms, bm) => {
+      if (bm.parentId) {
+        const b = bms.get(bm.parentId)
+        if (b) {
+          b.addNew(bm)
+        } else {
+          bms.set(bm.parentId, new BookmarksGroup(bm))
+        }
       }
-    }
-    return bms
-  }, new Map<string,BookmarksGroup>())
-
+      return bms
+    },
+    new Map<string, BookmarksGroup>()
+  )
 
   // 3. for each group, find the parent-path, using a in-memory Bookmark Map
-  for (const [ key, v ] of parentIdsMap) {
+  for (const [key, v] of parentIdsMap) {
     let parentId = key
-    while(!v.ok) {
-      let parent: chrome.bookmarks.BookmarkTreeNode | undefined = inMemoryBookmarkMap.get(parentId);
+    while (!v.ok) {
+      let parent: chrome.bookmarks.BookmarkTreeNode | undefined =
+        inMemoryBookmarkMap.get(parentId)
       if (!parent) {
         const parents = await chrome.bookmarks.get(parentId)
         parent = parents[0]
         inMemoryBookmarkMap.set(parent.id, parent)
       }
-      if(
-        parent && 
-        (
-          parent.parentId === undefined || 
-          parent.parentId === ROOT_BOOKMARK_ID || 
-          parent.title === ""
-        )
+      if (
+        parent &&
+        (parent.parentId === undefined || parent.parentId === ROOT_BOOKMARK_ID)
+        // || parent.title === ""
       ) {
         v.setOk().addParent(parent.title)
       } else {
@@ -147,10 +157,12 @@ async function getBmParentTitles(bms: chrome.bookmarks.BookmarkTreeNode[]) {
         // todo warning !
         parentId = parent.parentId!
       }
-
     }
     for (const bookmark of v.bookmarks) {
-      bookmarks.push({...bookmark, parentPath: v.parentPath.filter(path => path).join("/")})
+      bookmarks.push({
+        ...bookmark,
+        parentPath: `/${v.parentPath.join("/")}/`,
+      })
     }
     parentIdsMap.delete(key)
   }
@@ -159,8 +171,8 @@ async function getBmParentTitles(bms: chrome.bookmarks.BookmarkTreeNode[]) {
   bookmarks.push(...complete)
 
   // 5. ensure all bookmarks are sorted with first lastAdded
-  const sortPredicate = (a: number, b: number) => a > b ? -1 : 1
-  bookmarks.sort((a,b) => sortPredicate(a.dateAdded || 0 , b.dateAdded || 0 ))
+  const sortPredicate = (a: number, b: number) => (a > b ? -1 : 1)
+  bookmarks.sort((a, b) => sortPredicate(a.dateAdded || 0, b.dateAdded || 0))
 
   return bookmarks
 }

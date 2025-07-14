@@ -1,13 +1,19 @@
-import { Command, CommandName } from "./models/command";
-import { Port } from "./models/port";
-import { getBookmarks } from "./services/bookmarks";
-import { getHistory } from "./services/history";
-import { log } from "./logger";
-import { Response } from "./models/response";
-import { closeTabs, getRecentlyClosedTabs, getTabs, newTab, switchToTab } from "./services/tabs";
+import { Command, CommandName } from "./models/command"
+import { Port } from "./models/port"
+import { getBookmarks } from "./services/bookmarks"
+import { writeBookmark } from "./services/bookmarks-writer"
+import { getHistory } from "./services/history"
+import { log } from "./logger"
+import { Response } from "./models/response"
+import {
+  closeTabs,
+  getRecentlyClosedTabs,
+  getTabs,
+  newTab,
+  switchToTab,
+} from "./services/tabs"
 
 export async function handler(port: Port, cmd: Command) {
-
   switch (cmd.command) {
     case CommandName.GET_TABS:
       return getTabs(port, cmd)
@@ -21,11 +27,13 @@ export async function handler(port: Port, cmd: Command) {
       return await newTab(port, cmd)
     case CommandName.GET_BOOKMARKS:
       return getBookmarks(port, cmd)
+    case CommandName.WRITE_BOOKMARK:
+      await writeBookmark(port, cmd)
+      return
     case CommandName.GET_HISTORY_ITEMS:
       return getHistory(port, cmd)
     default:
       log("unknown command received in handler")
-      return port.postMessage(Response.end()) 
+      return port.postMessage(Response.end())
   }
-  
 }

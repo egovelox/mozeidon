@@ -2,7 +2,8 @@
 
 TLDR;
 - Handle your tabs, bookmarks and history from outside of your web-browser.
-- [🆕 Installation of the mozeidon brew cask](https://github.com/egovelox/mozeidon-macos-ui?tab=readme-ov-file#homebrew)
+- [🆕 Quick install of the mozeidon-macos-ui brew cask](https://github.com/egovelox/mozeidon-macos-ui?tab=readme-ov-file#homebrew)
+- [🤓 Install of the mozeidon cli](https://github.com/egovelox/mozeidon?tab=readme-ov-file#installation)
 
 ## Intro
 Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) OR [Google Chrome](https://www.google.com/chrome) tabs, history, and bookmarks. 
@@ -25,6 +26,7 @@ Using the ``mozeidon`` CLI, you can :
 - switch to a currently opened tab
 - open a new tab (empty tab or with target url)
 - close a currently opened tab
+- create, delete, update a bookmark
 
 <img width="1512" alt="mozeidon-cli" src="https://github.com/egovelox/mozeidon/assets/56078155/2cfd04c2-d066-49fa-973e-c389e90b1f37">
 <br/><br/>
@@ -317,8 +319,54 @@ You should now be able to use the CLI with the local binary :
 ./mozeidon/cli/mozeidon tabs get
 ```
 
-## Notes
+## Notes and limitations
 
-For users who installed both the firefox-addon AND the chrome-addon, 
-`mozeidon` CLI will not work properly when both browser-extensions are activated at the same time.
-To overcome this limitation, keep one extension activated (e.g firefox-addon) and deactivate the other extension (e.g chrome-addon).
+#### mozeidon cannot work simultaneously in different web-browsers
+
+For users who installed both the firefox-addon AND the chrome-addon,  
+`mozeidon` CLI will not work properly when both browser-extensions are activated at the same time.  
+To overcome this limitation, keep one extension activated (e.g firefox-addon)  
+and deactivate the other extension (e.g chrome-addon).
+
+If you notice any error during this operation, try to deactivate/reactivate the browser extension 🙏.
+
+Technically, to overcome this limitation, we would need a particular native-messaging-host (`mozeidon-native-app`) 
+for each web-browser.  
+The installation would surely be too complex for most users. 
+(see [architecture](https://github.com/egovelox/mozeidon?tab=readme-ov-file#architecture)),  
+
+#### For a given web-browser, mozeidon cannot work correctly if you use multiple browser windows.
+
+Mozeidon cannot guess in which browser window a given tab-id is located.  
+Consequently, if you have 2 browser windows,  
+`mozeidon tabs switch [tab-id]` will switch to the last active browser window,  
+where, possibly, the tab-id you targeted is not located.
+
+Personally I always use my web-browser with one unique window,  
+and `mozeidon` was precisely meant to facilitate browsing with a unique browser window.
+
+See [https://github.com/egovelox/mozeidon/issues/6](https://github.com/egovelox/mozeidon/issues/6)
+
+#### `mozeidon bookmark update` and browsers' *default bookmark folder*.
+
+Each browser has a *default bookmark folder*, e.g `Other Bookmarks` in Firefox, `Other Favorites` in Edge, etc.  
+Internally, this *default bookmark folder* is not located in the *Bookmarks Bar* tree ( though it's usually displayed inside the *Bookmarks Bar* )
+
+This *default bookmark folder* contravenes `mozeidon` design for folder locations (`--folder-path`):  
+In `mozeidon`, a `--folder-path` value
+- is always a path starting from the *Bookmarks Bar* ( aka *Favorites Bar* ) represented as `/`
+- should always start with `/`
+- should always end with `/`
+
+E.g in `mozeidon` :
+- `--folderPath "//surf/"` represents a `surf` folder, inside a `""` (no title) folder, inside the *Bookmarks Bar*
+- `--folderPath "//Other Bookmarks/"` represents a `Other Bookmarks` folder, inside a `""` (no title) folder, inside the *Bookmarks Bar*
+  ( and it should not be confused with the Firefox *default bookmark folder*, )
+
+Consequently, the `--folder-path` flag on the `mozeidon bookmark` commands cannot reference such *default bookmark folder*,
+meaning that :
+- You can create a bookmark in the *default bookmark folder* with `mozeidon bookmark new` by omitting the `--folder-path` flag.
+- Such created bookmark will appear in the results of `mozeidon bookmarks` with a `parent` field of `"parent":"//Other Bookmarks/"`
+- You cannot move (update) such bookmark in a *child* folder inside the *default bookmark folder* with e.g (let's our bookmark-id is `42`) `mozeidon bookmark update 42 --folder-path '//Other Bookmarks/surf/'`
+- Instead, that command will move the bookmark in a `surf` folder, inside a `Other Bookmarks` folder, inside a `""` (no title) folder, inside the *Bookmarks Bar*
+- But you can move (update) such bookmark in an other folder located outside of the *default bookmark folder*, with e.g `mozeidon bookmark update 42 --folder-path '/surf/'`

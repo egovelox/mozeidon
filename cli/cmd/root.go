@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/egovelox/mozeidon/cmd/bookmark"
 	"github.com/egovelox/mozeidon/cmd/bookmarks"
 	"github.com/egovelox/mozeidon/cmd/history"
 	"github.com/egovelox/mozeidon/cmd/tabs"
@@ -24,6 +25,7 @@ Mozeidon is a CLI to control a moz://a firefox instance.
 func init() {
 	rootCmd.AddCommand(tabs.TabsCmd)
 	rootCmd.AddCommand(bookmarks.BookmarksCmd)
+	rootCmd.AddCommand(bookmark.BookmarkCmd)
 	rootCmd.AddCommand(history.HistoryCmd)
 }
 func Execute() {

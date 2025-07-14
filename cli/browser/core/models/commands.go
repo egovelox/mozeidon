@@ -8,3 +8,7 @@ type Command struct {
 type CommandResult struct {
 	Data []byte
 }
+
+type DataResult struct {
+	Data string `json:"data"`
+}
