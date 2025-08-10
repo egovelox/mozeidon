@@ -4,6 +4,7 @@ import { Command } from "../models/command"
 import { Port } from "../models/port"
 import { Response } from "../models/response"
 import { delay, isDefined } from "../utils"
+import md5 from "md5"
 
 const inMemoryBookmarkMap = new Map<string, chrome.bookmarks.BookmarkTreeNode>()
 
@@ -24,6 +25,7 @@ export function getBookmarks(port: Port, { args }: Command) {
 
   const maxInput = parseInt(receivedParams[0])
   const chunkSizeInput = parseInt(receivedParams[1])
+  const receivedHashMD5 = receivedParams[2] ?? ""
 
   chrome.bookmarks
     .getRecent(maxInput ? maxInput : MAX_BOOKMARK_COUNT)
@@ -38,10 +40,35 @@ export function getBookmarks(port: Port, { args }: Command) {
         chunks.push(chunk)
       }
 
+      const bookmarksProcessedChunks = []
       // no parallelism, maintain order of bookmarks
       for (const chunk of chunks) {
         const bms = await processChunk(chunk)
-        port.postMessage(Response.data(bms))
+        if (receivedHashMD5) {
+          bookmarksProcessedChunks.push(bms)
+        } else {
+          port.postMessage(Response.data(bms))
+        }
+      }
+
+      if (receivedHashMD5) {
+        // if the received hash is valid, return a simple string "bookmarks_synchronized"
+          log(md5(JSON.stringify(bookmarksProcessedChunks.flat())))
+          log("hash received", receivedHashMD5)
+        if (receivedHashMD5 === md5(JSON.stringify(bookmarksProcessedChunks.flat()))) {
+          port.postMessage(Response.data("bookmarks_synchronized"))
+          await delay(10)
+          const endTime = Date.now()
+          log(`sending back bookmarks_synchronized in ${endTime - startTime} ms`)
+          return port.postMessage(Response.end())
+        } else {
+          for (const bms of bookmarksProcessedChunks) {
+            // we add a delay to ensure same behaviour as before
+            // TODO : check if we can remove this delay
+            await delay(1)
+            port.postMessage(Response.data(bms))
+          }
+        }
       }
 
       const endTime = Date.now()

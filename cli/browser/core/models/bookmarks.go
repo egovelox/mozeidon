@@ -5,10 +5,10 @@ type Bookmarks struct {
 }
 
 type Bookmark struct {
-	Parent string `json:"parent"`
-	Url    string `json:"url"`
-	Title  string `json:"title"`
 	Id     string `json:"id"`
+	Title  string `json:"title"`
+	Url    string `json:"url"`
+	Parent string `json:"parent"`
 }
 
 type BookmarkWriteQuery struct {

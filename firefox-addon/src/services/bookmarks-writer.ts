@@ -33,14 +33,14 @@ export async function writeBookmark(port: Port, { args }: Command) {
     }
     const endTime = Date.now()
     log(`ending writeBookmark in ${endTime - startTime} ms`)
-    port.postMessage(Response.end())
+    return port.postMessage(Response.end())
   } catch (e) {
     const endTime = Date.now()
     log(`error in writeBookmark in ${endTime - startTime} ms`, e)
     port.postMessage(Response.data(`[Error] ${e.message ?? e.toString()}`))
     // pause 10ms, or this end message may be received before the message above
     await delay(10)
-    port.postMessage(Response.end())
+    return port.postMessage(Response.end())
   }
 }
 

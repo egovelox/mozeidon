@@ -11,19 +11,32 @@ import (
 var template string
 var maximum int64
 var chunk int64
+var md5Hash string
 
 var BookmarksCmd = &cobra.Command{
 	Use:   "bookmarks",
 	Short: "Get bookmarks",
 	Long: "Get bookmarks" +
 		"\n\n" +
-		"You may get items" +
+		"You can get bookmarks items" +
 		"\n" +
 		" - with a given maximum with -m" +
 		"\n" +
 		" - and/or divided by chunks of a given number of items using -c" +
 		"\n" +
-		" - using a go-template with -t",
+		"   note that you will receive multiple JSON chunks, but the whole response will not be valid JSON." +
+		"\n" +
+		" - using a go-template with -t" +
+		"\n" +
+		" - using a md5 hash with --hash" +
+		"\n" +
+		"   note that --hash flag will be ignored if using --go-template flag aka -t" +
+		"\n" +
+		"   note that: " +
+		"     - if the hash is not matched, you will get bookmarks items" +
+		"\n" +
+		`     - if the hash is matched, you will get a simple string : "bookmarks_synchronized"` +
+		"\n\n",
 	Run: func(_ *cobra.Command, _ []string) {
 		app, err := core.NewApp()
 		if err != nil {
@@ -33,7 +46,7 @@ var BookmarksCmd = &cobra.Command{
 		if len(template) > 0 {
 			app.BookmarksTemplate(template, maximum, chunk)
 		} else {
-			app.BookmarksJson(maximum, chunk)
+			app.BookmarksJson(maximum, chunk, md5Hash)
 		}
 	},
 }
@@ -45,4 +58,6 @@ func init() {
 		Int64VarP(&maximum, "max", "m", 0, "the maximum number of items to return")
 	BookmarksCmd.Flags().
 		Int64VarP(&chunk, "chunk", "c", 0, "the number of items a chunk can contain")
+	BookmarksCmd.Flags().
+		StringVar(&md5Hash, "hash", "", "a md5 hash to be compared with the bookmarks you are requesting")
 }

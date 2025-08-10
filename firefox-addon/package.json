@@ -13,10 +13,12 @@
     "npm": ">=10"
   },
   "dependencies": {
+    "md5": "2.3.0",
     "valibot": "1.1.0"
   },
   "devDependencies": {
     "@types/firefox-webext-browser": "120.0.1",
+    "@types/md5": "2.3.5",
     "prettier": "3.6.2",
     "ts-loader": "9.5.1",
     "typescript": "~5.1.3",

@@ -21,7 +21,7 @@ export async function newTab(port: Port, { args }: Command) {
     log("open google tab")
     await chrome.tabs.create({ url })
   }
-  port.postMessage(Response.end())
+  return port.postMessage(Response.end())
 }
 
 export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
@@ -47,7 +47,7 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
       port.postMessage(Response.data(tabs))
       // pause 100ms, or this end message may be received before the message above
       await delay(100)
-      port.postMessage(Response.end())
+      return port.postMessage(Response.end())
     })
 }
 
@@ -77,7 +77,7 @@ export function getTabs(port: Port, { command: _cmd }: Command) {
     port.postMessage(Response.data(tabs))
     // pause 100ms, or this end message may be received before the message above
     await delay(100)
-    port.postMessage(Response.end())
+    return port.postMessage(Response.end())
   })
 }
 
@@ -112,7 +112,7 @@ export function switchToTab(port: Port, { args }: Command) {
     }
   })
 
-  port.postMessage(Response.end())
+  return port.postMessage(Response.end())
 }
 
 export function closeTabs(port: Port, { args }: Command) {
@@ -142,5 +142,5 @@ export function closeTabs(port: Port, { args }: Command) {
     chrome.tabs.remove(tabToCloseIds)
   })
 
-  port.postMessage(Response.end())
+  return port.postMessage(Response.end())
 }

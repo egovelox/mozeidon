@@ -66,6 +66,6 @@ export function getHistory(port: Port, { args }: Command) {
       log(`sending back historyItems in ${endTime - startTime} ms`)
       // pause 100ms, or this end message may be received before the last chunk
       await delay(100)
-      port.postMessage(Response.end())
+      return port.postMessage(Response.end())
     })
 }
