@@ -5,10 +5,10 @@ import (
 	"fmt"
 )
 
-func (a *App) TabsJson(query string, recentlyClosed bool) {
+func (a *App) TabsJson(recentlyClosed bool, latest10First bool) {
 	// TODO: handle error
 
-	channel := a.TabsGet(recentlyClosed)
+	channel := a.TabsGet(recentlyClosed, latest10First)
 	tabs := <-channel
 	tabsAsString, _ := json.Marshal(tabs)
 

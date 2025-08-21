@@ -10,6 +10,7 @@ import (
 
 var recentlyClosed bool
 var template string
+var latest10First bool
 
 var GetTabsCmd = &cobra.Command{
 	Use:   "get",
@@ -29,9 +30,9 @@ var GetTabsCmd = &cobra.Command{
 			return
 		}
 		if len(template) > 0 {
-			app.TabsTemplate(template)
+			app.TabsTemplate(template, recentlyClosed, latest10First)
 		} else {
-			app.TabsJson("", recentlyClosed)
+			app.TabsJson(recentlyClosed, latest10First)
 		}
 	},
 }
@@ -41,4 +42,7 @@ func init() {
 		StringVarP(&template, "go-template", "t", "", "go-template to customize output")
 	GetTabsCmd.Flags().
 		BoolVarP(&recentlyClosed, "closed", "c", false, "only recently-closed tabs")
+	GetTabsCmd.Flags().
+		BoolVarP(&latest10First, "latest-first", "l", true, "go 10 latest accessed tabs first")
+	GetTabsCmd.MarkFlagsMutuallyExclusive("closed", "latest-first")
 }

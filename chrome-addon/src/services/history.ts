@@ -69,3 +69,34 @@ export function getHistory(port: Port, { args }: Command) {
       return port.postMessage(Response.end())
     })
 }
+
+export async function deleteHistory(port: Port, { args }: Command) {
+  if (!args) {
+    log("missing args in delete-history")
+    return port.postMessage(Response.end())
+  }
+
+  const startTime = Date.now()
+  try {
+  if (args === "all") {
+    await chrome.history.deleteAll()
+    const endTime = Date.now()
+    log(`Deleted all history in ${endTime - startTime} ms`)
+    return port.postMessage(Response.end())
+  }
+    const url = args
+    await chrome.history.deleteUrl({url})
+    const endTime = Date.now()
+    log(`Deleted history for url ${url} in ${endTime - startTime} ms`)
+    return port.postMessage(Response.end())
+
+  } catch(e) {
+    const endTime = Date.now()
+    log(`error in deleteHistory in ${endTime - startTime} ms`, e)
+    port.postMessage(Response.data(`[Error] ${e.message ?? e.toString()}`))
+    // pause 10ms, or this end message may be received before the message above
+    await delay(10)
+    return port.postMessage(Response.end())
+  }
+}
+

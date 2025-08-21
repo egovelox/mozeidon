@@ -429,7 +429,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.handler = void 0;
+const logger_1 = __webpack_require__(614);
 const command_1 = __webpack_require__(238);
+const response_1 = __webpack_require__(392);
 const bookmarks_1 = __webpack_require__(972);
 const bookmarks_writer_1 = __webpack_require__(14);
 const history_1 = __webpack_require__(677);
@@ -454,6 +456,11 @@ function handler(port, cmd) {
                 return;
             case command_1.CommandName.GET_HISTORY_ITEMS:
                 return (0, history_1.getHistory)(port, cmd);
+            case command_1.CommandName.DELETE_HISTORY_ITEMS:
+                return (0, history_1.deleteHistory)(port, cmd);
+            default:
+                (0, logger_1.log)("unknown command received in handler");
+                return port.postMessage(response_1.Response.end());
         }
     });
 }
@@ -493,6 +500,7 @@ var CommandName;
     CommandName["GET_BOOKMARKS"] = "get-bookmarks";
     CommandName["WRITE_BOOKMARK"] = "write-bookmark";
     CommandName["GET_HISTORY_ITEMS"] = "get-history-items";
+    CommandName["DELETE_HISTORY_ITEMS"] = "delete-history-items";
     CommandName["GET_RECENTLY_CLOSED_TABS"] = "get-recently-closed-tabs";
     CommandName["GET_TABS"] = "get-tabs";
     CommandName["NEW_TAB"] = "new-tab";
@@ -1029,7 +1037,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getHistory = void 0;
+exports.deleteHistory = exports.getHistory = void 0;
 const logger_1 = __webpack_require__(614);
 const response_1 = __webpack_require__(392);
 const constants_1 = __webpack_require__(921);
@@ -1086,6 +1094,37 @@ function getHistory(port, { args }) {
     }));
 }
 exports.getHistory = getHistory;
+function deleteHistory(port, { args }) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!args) {
+            (0, logger_1.log)("missing args in delete-history");
+            return port.postMessage(response_1.Response.end());
+        }
+        const startTime = Date.now();
+        try {
+            if (args === "all") {
+                yield chrome.history.deleteAll();
+                const endTime = Date.now();
+                (0, logger_1.log)(`Deleted all history in ${endTime - startTime} ms`);
+                return port.postMessage(response_1.Response.end());
+            }
+            const url = args;
+            yield chrome.history.deleteUrl({ url });
+            const endTime = Date.now();
+            (0, logger_1.log)(`Deleted history for url ${url} in ${endTime - startTime} ms`);
+            return port.postMessage(response_1.Response.end());
+        }
+        catch (e) {
+            const endTime = Date.now();
+            (0, logger_1.log)(`error in deleteHistory in ${endTime - startTime} ms`, e);
+            port.postMessage(response_1.Response.data(`[Error] ${(_a = e.message) !== null && _a !== void 0 ? _a : e.toString()}`));
+            yield (0, utils_1.delay)(10);
+            return port.postMessage(response_1.Response.end());
+        }
+    });
+}
+exports.deleteHistory = deleteHistory;
 
 
 /***/ }),
@@ -1141,7 +1180,7 @@ function getRecentlyClosedTabs(port, { command: _cmd }) {
             .filter((t) => !!t);
         (0, logger_1.log)("Sending back ", sessionTabs.length, " recently closed tabs");
         const tabs = sessionTabs.map((tab) => {
-            var _a;
+            var _a, _b, _c;
             return ({
                 id: (_a = tab.lastAccessed) !== null && _a !== void 0 ? _a : Math.floor(Math.random() * 1000),
                 windowId: tab.windowId,
@@ -1150,6 +1189,8 @@ function getRecentlyClosedTabs(port, { command: _cmd }) {
                 url: tab.url,
                 active: tab.active,
                 domain: tab.url ? new URL(tab.url).hostname : "",
+                lastAccessed: (_b = tab.lastAccessed) !== null && _b !== void 0 ? _b : 0,
+                index: (_c = tab.index) !== null && _c !== void 0 ? _c : 0,
             });
         });
         port.postMessage(response_1.Response.data(tabs));
@@ -1158,25 +1199,32 @@ function getRecentlyClosedTabs(port, { command: _cmd }) {
     }));
 }
 exports.getRecentlyClosedTabs = getRecentlyClosedTabs;
-function getTabs(port, { command: _cmd }) {
+function getTabs(port, { command: _cmd, args }) {
     chrome.tabs.query({}).then((chromeTabs) => __awaiter(this, void 0, void 0, function* () {
         let returnedTabs = chromeTabs.slice();
-        chromeTabs.sort((a, b) => b.lastAccessed - a.lastAccessed);
-        const firstOrderedTabs = chromeTabs.slice(0, 10);
-        returnedTabs = [
-            ...firstOrderedTabs,
-            ...returnedTabs.filter((t) => !firstOrderedTabs.includes(t)),
-        ];
+        if (args === "latest-10-first") {
+            chromeTabs.sort((a, b) => b.lastAccessed - a.lastAccessed);
+            const firstOrderedTabs = chromeTabs.slice(0, 10);
+            returnedTabs = [
+                ...firstOrderedTabs,
+                ...returnedTabs.filter((t) => !firstOrderedTabs.includes(t)),
+            ];
+        }
         (0, logger_1.log)("Sending back ", returnedTabs.length, " tabs");
-        const tabs = returnedTabs.map((tab) => ({
-            id: tab.id,
-            windowId: tab.windowId,
-            title: tab.title,
-            pinned: tab.pinned,
-            url: tab.url,
-            active: tab.active,
-            domain: tab.url ? new URL(tab.url).hostname : "",
-        }));
+        const tabs = returnedTabs.map((tab) => {
+            var _a;
+            return ({
+                id: tab.id,
+                windowId: tab.windowId,
+                title: tab.title,
+                pinned: tab.pinned,
+                url: tab.url,
+                active: tab.active,
+                domain: tab.url ? new URL(tab.url).hostname : "",
+                lastAccessed: (_a = tab.lastAccessed) !== null && _a !== void 0 ? _a : 0,
+                index: tab.index,
+            });
+        });
         port.postMessage(response_1.Response.data(tabs));
         yield (0, utils_1.delay)(100);
         return port.postMessage(response_1.Response.end());

@@ -45,4 +45,6 @@ func init() {
 		Int64VarP(&maximum, "max", "m", 0, "the maximum number of items to return")
 	HistoryCmd.Flags().
 		Int64VarP(&chunk, "chunk", "c", 0, "the number of items a chunk can contain")
+
+	HistoryCmd.AddCommand(DeleteHistoryCmd)
 }

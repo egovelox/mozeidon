@@ -43,6 +43,8 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
         url: tab.url,
         active: tab.active,
         domain: tab.url ? new URL(tab.url).hostname : "",
+        lastAccessed: tab.lastAccessed ?? 0,
+        index: tab.index ?? 0,
       }))
       port.postMessage(Response.data(tabs))
       // pause 100ms, or this end message may be received before the message above
@@ -51,19 +53,19 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
     })
 }
 
-export function getTabs(port: Port, { command: _cmd }: Command) {
+export function getTabs(port: Port, { command: _cmd, args }: Command) {
   chrome.tabs.query({}).then(async (chromeTabs) => {
     let returnedTabs = chromeTabs.slice()
 
-    chromeTabs.sort((a, b) => b.lastAccessed! - a.lastAccessed!)
-    const firstOrderedTabs = chromeTabs.slice(0, 10)
-
-    // in returnedTabs, the first 10 items are the 10 latest accessed tabs.
-    returnedTabs = [
-      ...firstOrderedTabs,
-      ...returnedTabs.filter((t) => !firstOrderedTabs.includes(t)),
-    ]
-
+    // if requested in args, the first 10 items are the 10 latest accessed tabs.
+    if (args === "latest-10-first") {
+      chromeTabs.sort((a, b) => b.lastAccessed! - a.lastAccessed!)
+      const firstOrderedTabs = chromeTabs.slice(0, 10)
+      returnedTabs = [
+        ...firstOrderedTabs,
+        ...returnedTabs.filter((t) => !firstOrderedTabs.includes(t)),
+      ]
+    }
     log("Sending back ", returnedTabs.length, " tabs")
     const tabs = returnedTabs.map((tab) => ({
       id: tab.id,
@@ -73,6 +75,8 @@ export function getTabs(port: Port, { command: _cmd }: Command) {
       url: tab.url,
       active: tab.active,
       domain: tab.url ? new URL(tab.url).hostname : "",
+      lastAccessed: tab.lastAccessed ?? 0,
+      index: tab.index,
     }))
     port.postMessage(Response.data(tabs))
     // pause 100ms, or this end message may be received before the message above
