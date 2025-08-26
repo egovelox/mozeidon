@@ -445,10 +445,14 @@ function handler(port, cmd) {
                 return (0, tabs_1.getRecentlyClosedTabs)(port, cmd);
             case command_1.CommandName.SWITCH_TAB:
                 return (0, tabs_1.switchToTab)(port, cmd);
+            case command_1.CommandName.UPDATE_TAB:
+                return yield (0, tabs_1.updateTabs)(port, cmd);
             case command_1.CommandName.CLOSE_TABS:
                 return (0, tabs_1.closeTabs)(port, cmd);
             case command_1.CommandName.NEW_TAB:
                 return yield (0, tabs_1.newTab)(port, cmd);
+            case command_1.CommandName.DUPLICATE_TAB:
+                return yield (0, tabs_1.duplicateTab)(port, cmd);
             case command_1.CommandName.GET_BOOKMARKS:
                 return (0, bookmarks_1.getBookmarks)(port, cmd);
             case command_1.CommandName.WRITE_BOOKMARK:
@@ -505,6 +509,8 @@ var CommandName;
     CommandName["GET_TABS"] = "get-tabs";
     CommandName["NEW_TAB"] = "new-tab";
     CommandName["SWITCH_TAB"] = "switch-tab";
+    CommandName["UPDATE_TAB"] = "update-tab";
+    CommandName["DUPLICATE_TAB"] = "duplicate-tab";
 })(CommandName || (exports.CommandName = CommandName = {}));
 
 
@@ -1144,7 +1150,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.closeTabs = exports.switchToTab = exports.getTabs = exports.getRecentlyClosedTabs = exports.newTab = void 0;
+exports.updateTabs = exports.closeTabs = exports.switchToTab = exports.getTabs = exports.getRecentlyClosedTabs = exports.duplicateTab = exports.newTab = void 0;
 const logger_1 = __webpack_require__(614);
 const response_1 = __webpack_require__(392);
 const utils_1 = __webpack_require__(185);
@@ -1169,6 +1175,62 @@ function newTab(port, { args }) {
     });
 }
 exports.newTab = newTab;
+function duplicateTab(port, { args }) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!args) {
+            (0, logger_1.log)("missing args in duplicate-tab");
+            return port.postMessage(response_1.Response.end());
+        }
+        try {
+            const userArgs = args.split(":");
+            const tabId = Number(userArgs[0]);
+            const windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined;
+            const tab = yield chrome.tabs.get(tabId);
+            (0, logger_1.log)("duplicating tab: ", JSON.stringify(tab));
+            const newTab = yield chrome.tabs.create({
+                active: false,
+                windowId: windowId,
+                url: tab.url,
+                pinned: tab.pinned,
+                index: tab.index + 1
+            });
+            (0, logger_1.log)("duplicated tab: ", JSON.stringify(newTab));
+            const response = [{
+                    id: newTab.id,
+                    windowId: newTab.windowId,
+                    title: tab.title,
+                    pinned: newTab.pinned,
+                    url: tab.url,
+                    active: newTab.active,
+                    domain: tab.url ? new URL(tab.url).hostname : "",
+                    lastAccessed: (_a = newTab.lastAccessed) !== null && _a !== void 0 ? _a : 0,
+                    index: (_b = newTab.index) !== null && _b !== void 0 ? _b : 0,
+                }];
+            port.postMessage(response_1.Response.data(response));
+        }
+        catch (e) {
+            (0, logger_1.log)("error while duplicating tab", JSON.stringify(e));
+            const tab = yield chrome.tabs.create({ active: false });
+            (0, logger_1.log)("defaults to creating a new empty tab");
+            const response = [{
+                    id: tab.id,
+                    windowId: tab.windowId,
+                    title: tab.title,
+                    pinned: tab.pinned,
+                    url: tab.url,
+                    active: tab.active,
+                    domain: tab.url ? new URL(tab.url).hostname : "",
+                    lastAccessed: 0,
+                    index: (_c = tab.index) !== null && _c !== void 0 ? _c : 0,
+                }];
+            port.postMessage(response_1.Response.data(response));
+        }
+        yield (0, utils_1.delay)(10);
+        return port.postMessage(response_1.Response.end());
+    });
+}
+exports.duplicateTab = duplicateTab;
 function getRecentlyClosedTabs(port, { command: _cmd }) {
     chrome.sessions
         .getRecentlyClosed()
@@ -1284,6 +1346,33 @@ function closeTabs(port, { args }) {
     return port.postMessage(response_1.Response.end());
 }
 exports.closeTabs = closeTabs;
+function updateTabs(port, { args }) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!args) {
+            (0, logger_1.log)("invalid args, received: ", args);
+            return port.postMessage(response_1.Response.end());
+        }
+        const userArgs = args.split(":");
+        const tabId = Number.parseInt(userArgs[0]);
+        const windowId = Number.parseInt(userArgs[1]);
+        const tabIndex = Number.parseInt(userArgs[2]);
+        const userProvidedPin = userArgs[3];
+        if (userProvidedPin === 'true') {
+            yield chrome.tabs.update(tabId, { pinned: true });
+            (0, logger_1.log)("successfully pinned tab ", tabId);
+        }
+        if (userProvidedPin === 'false') {
+            yield chrome.tabs.update(tabId, { pinned: false });
+            (0, logger_1.log)("successfully unpinned tab ", tabId);
+        }
+        if (tabIndex !== -2) {
+            yield chrome.tabs.move(tabId, { index: tabIndex, windowId: windowId });
+            (0, logger_1.log)(`successfully moved tab ${windowId}:${tabId} to index ${tabIndex}`);
+        }
+        return port.postMessage(response_1.Response.end());
+    });
+}
+exports.updateTabs = updateTabs;
 
 
 /***/ }),

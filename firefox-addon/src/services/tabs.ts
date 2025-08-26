@@ -24,6 +24,61 @@ export async function newTab(port: Port, { args }: Command) {
   return port.postMessage(Response.end())
 }
 
+export async function duplicateTab(port: Port, { args }: Command) {
+  if (!args) {
+    log("missing args in duplicate-tab")
+    return port.postMessage(Response.end())
+  }
+
+  try {
+    const userArgs = args.split(":")
+    const tabId = Number(userArgs[0])
+    const windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined
+    const tab = await browser.tabs.get(tabId)
+    log("duplicating tab: ", JSON.stringify(tab))
+    const newTab = await browser.tabs.create({
+      active: false,
+      windowId: windowId,
+      url: tab.url,
+      pinned: tab.pinned,
+      index: tab.index + 1
+    })
+    log("duplicated tab: ", JSON.stringify(newTab))
+    const response = [{
+      id: newTab.id,
+      windowId: newTab.windowId,
+      title: tab.title,
+      pinned: newTab.pinned,
+      url: tab.url,
+      active: newTab.active,
+      domain: tab.url ? new URL(tab.url).hostname : "",
+      // we created the tab with active: false, to this tab was not accessed yet
+      lastAccessed: 0,
+      index: newTab.index ?? 0,
+    }]
+    port.postMessage(Response.data(response))
+  } catch (e) {
+    log("error while duplicating tab", JSON.stringify(e))
+    const tab = await browser.tabs.create({active: false})
+    log("defaults to creating a new empty tab")
+    const response = [{
+      id: tab.id,
+      windowId: tab.windowId,
+      title: tab.title,
+      pinned: tab.pinned,
+      url: tab.url,
+      active: tab.active,
+      domain: tab.url ? new URL(tab.url).hostname : "",
+      lastAccessed: tab.lastAccessed ?? 0,
+      index: tab.index ?? 0,
+    }]
+    port.postMessage(Response.data(response))
+  }
+  // pause 10ms, or this end message may be received before the message above
+  await delay(10)
+  return port.postMessage(Response.end())
+}
+
 export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
   browser.sessions
     .getRecentlyClosed()
@@ -146,6 +201,36 @@ export function closeTabs(port: Port, { args }: Command) {
     log("closing tabs", tabToCloseIds)
     browser.tabs.remove(tabToCloseIds)
   })
+
+  return port.postMessage(Response.end())
+}
+
+export async function updateTabs(port: Port, { args }: Command) {
+  if (!args) {
+    log("invalid args, received: ", args)
+    return port.postMessage(Response.end())
+  }
+  const userArgs = args.split(":")
+  const tabId = Number.parseInt(userArgs[0])
+  const windowId = Number.parseInt(userArgs[1])
+  const tabIndex = Number.parseInt(userArgs[2])
+  const shouldPin = userArgs[3]
+
+  // first check if tab should be pinned or unpinned
+  if (shouldPin === 'true') {
+    await browser.tabs.update(tabId, { pinned: true })
+    log("successfully pinned tab ", tabId)
+  }
+  if (shouldPin === 'false') {
+    await browser.tabs.update(tabId, { pinned: false })
+    log("successfully unpinned tab ", tabId)
+  }
+
+  // -2 is default for tabIndex, meaning the user did not requested to update the index
+  if (tabIndex !== -2) {
+    await browser.tabs.move(tabId, {index: tabIndex, windowId: windowId })
+    log(`successfully moved tab ${windowId}:${tabId} to index ${tabIndex}`)
+  }
 
   return port.postMessage(Response.end())
 }
