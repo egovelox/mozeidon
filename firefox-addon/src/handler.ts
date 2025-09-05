@@ -14,6 +14,7 @@ import {
   switchToTab,
   updateTabs,
 } from "./services/tabs"
+import { getGroups } from "./services/groups"
 
 export async function handler(port: Port, cmd: Command) {
   switch (cmd.command) {
@@ -40,6 +41,8 @@ export async function handler(port: Port, cmd: Command) {
       return getHistory(port, cmd)
     case CommandName.DELETE_HISTORY_ITEMS:
       return deleteHistory(port, cmd)
+    case CommandName.GET_GROUPS:
+      return getGroups(port, cmd)
     default:
       log("unknown command received in handler")
       return port.postMessage(Response.end())

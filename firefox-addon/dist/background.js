@@ -436,6 +436,7 @@ const history_1 = __webpack_require__(677);
 const logger_1 = __webpack_require__(614);
 const response_1 = __webpack_require__(392);
 const tabs_1 = __webpack_require__(721);
+const groups_1 = __webpack_require__(357);
 function handler(port, cmd) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (cmd.command) {
@@ -462,6 +463,8 @@ function handler(port, cmd) {
                 return (0, history_1.getHistory)(port, cmd);
             case command_1.CommandName.DELETE_HISTORY_ITEMS:
                 return (0, history_1.deleteHistory)(port, cmd);
+            case command_1.CommandName.GET_GROUPS:
+                return (0, groups_1.getGroups)(port, cmd);
             default:
                 (0, logger_1.log)("unknown command received in handler");
                 return port.postMessage(response_1.Response.end());
@@ -511,6 +514,7 @@ var CommandName;
     CommandName["SWITCH_TAB"] = "switch-tab";
     CommandName["UPDATE_TAB"] = "update-tab";
     CommandName["DUPLICATE_TAB"] = "duplicate-tab";
+    CommandName["GET_GROUPS"] = "get-groups";
 })(CommandName || (exports.CommandName = CommandName = {}));
 
 
@@ -1028,6 +1032,38 @@ function getBmParentTitles(bms) {
 
 /***/ }),
 
+/***/ 357:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getGroups = void 0;
+const logger_1 = __webpack_require__(614);
+const response_1 = __webpack_require__(392);
+const utils_1 = __webpack_require__(185);
+function getGroups(port, { command: _cmd }) {
+    browser.tabGroups.query({}).then((groups) => __awaiter(this, void 0, void 0, function* () {
+        (0, logger_1.log)("Sending back ", groups.length, " groups");
+        port.postMessage(response_1.Response.data(groups));
+        yield (0, utils_1.delay)(40);
+        return port.postMessage(response_1.Response.end());
+    }));
+}
+exports.getGroups = getGroups;
+
+
+/***/ }),
+
 /***/ 677:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -1290,7 +1326,7 @@ function getTabs(port, { command: _cmd, args }) {
             });
         });
         port.postMessage(response_1.Response.data(tabs));
-        yield (0, utils_1.delay)(100);
+        yield (0, utils_1.delay)(40);
         return port.postMessage(response_1.Response.end());
     }));
 }

@@ -4,6 +4,7 @@ import { Port } from "./models/port"
 import { Response } from "./models/response"
 import { getBookmarks } from "./services/bookmarks"
 import { writeBookmark } from "./services/bookmarks-writer"
+import { getGroups } from "./services/groups"
 import { deleteHistory, getHistory } from "./services/history"
 import {
   closeTabs,
@@ -40,6 +41,8 @@ export async function handler(port: Port, cmd: Command) {
       return getHistory(port, cmd)
     case CommandName.DELETE_HISTORY_ITEMS:
       return deleteHistory(port, cmd)
+    case CommandName.GET_GROUPS:
+      return getGroups(port, cmd)
     default:
       log("unknown command received in handler")
       return port.postMessage(Response.end())

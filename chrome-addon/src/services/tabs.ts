@@ -136,8 +136,8 @@ export function getTabs(port: Port, { command: _cmd, args }: Command) {
       index: tab.index,
     }))
     port.postMessage(Response.data(tabs))
-    // pause 100ms, or this end message may be received before the message above
-    await delay(100)
+    // pause 40ms, or this end message may be received before the message above
+    await delay(40)
     return port.postMessage(Response.end())
   })
 }

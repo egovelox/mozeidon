@@ -9,7 +9,8 @@ export enum CommandName {
   NEW_TAB = "new-tab",
   SWITCH_TAB = "switch-tab",
   UPDATE_TAB = "update-tab",
-  DUPLICATE_TAB = "duplicate-tab"
+  DUPLICATE_TAB = "duplicate-tab",
+  GET_GROUPS = "get-groups",
 }
 export type Command = {
   command: CommandName

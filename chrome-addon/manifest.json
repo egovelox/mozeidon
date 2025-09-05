@@ -14,5 +14,5 @@
   "action": {
     "default_icon": "assets/trident.png"
   },
-  "permissions": ["nativeMessaging", "tabs", "sessions", "bookmarks", "history"]
+  "permissions": ["nativeMessaging", "tabs", "sessions", "bookmarks", "history", "tabGroups"]
 }
