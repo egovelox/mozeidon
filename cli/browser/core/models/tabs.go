@@ -7,6 +7,7 @@ type Tabs struct {
 type Tab struct {
 	Id           int64  `json:"id"`
 	WindowId     int64  `json:"windowId"`
+	GroupId      int64  `json:"groupId"`
 	Pinned       bool   `json:"pinned"`
 	Domain       string `json:"domain"`
 	Url          string `json:"url"`

@@ -93,6 +93,7 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
       const tabs = sessionTabs.map((tab) => ({
         id: tab.lastAccessed ?? Math.floor(Math.random() * 1000),
         windowId: tab.windowId,
+        groupId: tab.groupId ?? -1,
         title: tab.title,
         pinned: tab.pinned,
         url: tab.url,
@@ -125,6 +126,7 @@ export function getTabs(port: Port, { command: _cmd, args }: Command) {
     const tabs = returnedTabs.map((tab) => ({
       id: tab.id,
       windowId: tab.windowId,
+      groupId: tab.groupId ?? -1,
       title: tab.title,
       pinned: tab.pinned,
       url: tab.url,

@@ -92,6 +92,7 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
       log("Sending back ", sessionTabs.length, " recently closed tabs")
       const tabs = sessionTabs.map((tab) => ({
         id: tab.lastAccessed ?? Math.floor(Math.random() * 1000),
+        groupId: (tab as any).groupId ?? -1,
         windowId: tab.windowId,
         title: tab.title,
         pinned: tab.pinned,
@@ -125,6 +126,7 @@ export function getTabs(port: Port, { command: _cmd, args }: Command) {
     log("Sending back ", returnedTabs.length, " tabs")
     const tabs = returnedTabs.map((tab) => ({
       id: tab.id,
+      groupId: (tab as any).groupId ?? -1,
       windowId: tab.windowId,
       title: tab.title,
       pinned: tab.pinned,

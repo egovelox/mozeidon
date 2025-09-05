@@ -1242,17 +1242,18 @@ function getRecentlyClosedTabs(port, { command: _cmd }) {
             .filter((t) => !!t);
         (0, logger_1.log)("Sending back ", sessionTabs.length, " recently closed tabs");
         const tabs = sessionTabs.map((tab) => {
-            var _a, _b, _c;
+            var _a, _b, _c, _d;
             return ({
                 id: (_a = tab.lastAccessed) !== null && _a !== void 0 ? _a : Math.floor(Math.random() * 1000),
                 windowId: tab.windowId,
+                groupId: (_b = tab.groupId) !== null && _b !== void 0 ? _b : -1,
                 title: tab.title,
                 pinned: tab.pinned,
                 url: tab.url,
                 active: tab.active,
                 domain: tab.url ? new URL(tab.url).hostname : "",
-                lastAccessed: (_b = tab.lastAccessed) !== null && _b !== void 0 ? _b : 0,
-                index: (_c = tab.index) !== null && _c !== void 0 ? _c : 0,
+                lastAccessed: (_c = tab.lastAccessed) !== null && _c !== void 0 ? _c : 0,
+                index: (_d = tab.index) !== null && _d !== void 0 ? _d : 0,
             });
         });
         port.postMessage(response_1.Response.data(tabs));
@@ -1274,16 +1275,17 @@ function getTabs(port, { command: _cmd, args }) {
         }
         (0, logger_1.log)("Sending back ", returnedTabs.length, " tabs");
         const tabs = returnedTabs.map((tab) => {
-            var _a;
+            var _a, _b;
             return ({
                 id: tab.id,
                 windowId: tab.windowId,
+                groupId: (_a = tab.groupId) !== null && _a !== void 0 ? _a : -1,
                 title: tab.title,
                 pinned: tab.pinned,
                 url: tab.url,
                 active: tab.active,
                 domain: tab.url ? new URL(tab.url).hostname : "",
-                lastAccessed: (_a = tab.lastAccessed) !== null && _a !== void 0 ? _a : 0,
+                lastAccessed: (_b = tab.lastAccessed) !== null && _b !== void 0 ? _b : 0,
                 index: tab.index,
             });
         });
