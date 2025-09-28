@@ -12,6 +12,7 @@ var tabId int64
 var windowId int64
 var tabIndex int64
 var pin bool
+var shouldBeUngrouped bool
 
 var UpdateTabCmd = &cobra.Command{
 	Use:   "update",
@@ -41,7 +42,7 @@ var UpdateTabCmd = &cobra.Command{
 			userProvidedPin = true
 		}
 
-		app.TabsUpdate(tabId, windowId, tabIndex, userProvidedPin, pin)
+		app.TabsUpdate(tabId, windowId, tabIndex, userProvidedPin, pin, shouldBeUngrouped)
 
 	},
 }
@@ -57,5 +58,7 @@ func init() {
 		Int64VarP(&tabIndex, "tab-index", "i", -2, "the index position to move the tab to, starting at 0. A value of -1 will place the tab at the end of the window.")
 	UpdateTabCmd.Flags().
 		BoolVarP(&pin, "pin", "p", false, "whether the tab should be pinned")
+	UpdateTabCmd.Flags().
+		BoolVar(&shouldBeUngrouped, "should-be-ungrouped", false, "whether the tab should remain ungrouped")
 	UpdateTabCmd.MarkFlagsOneRequired("tab-index", "pin")
 }

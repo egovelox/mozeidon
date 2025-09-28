@@ -465,6 +465,10 @@ function handler(port, cmd) {
                 return (0, history_1.deleteHistory)(port, cmd);
             case command_1.CommandName.GET_GROUPS:
                 return (0, groups_1.getGroups)(port, cmd);
+            case command_1.CommandName.UPDATE_GROUP:
+                return (0, groups_1.updateGroup)(port, cmd);
+            case command_1.CommandName.NEW_GROUP_TAB:
+                return yield (0, tabs_1.newGroupTab)(port, cmd);
             default:
                 (0, logger_1.log)("unknown command received in handler");
                 return port.postMessage(response_1.Response.end());
@@ -515,6 +519,8 @@ var CommandName;
     CommandName["UPDATE_TAB"] = "update-tab";
     CommandName["DUPLICATE_TAB"] = "duplicate-tab";
     CommandName["GET_GROUPS"] = "get-groups";
+    CommandName["UPDATE_GROUP"] = "update-group";
+    CommandName["NEW_GROUP_TAB"] = "new-group-tab";
 })(CommandName || (exports.CommandName = CommandName = {}));
 
 
@@ -1047,7 +1053,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getGroups = void 0;
+exports.updateGroup = exports.getGroups = void 0;
 const logger_1 = __webpack_require__(614);
 const response_1 = __webpack_require__(392);
 const utils_1 = __webpack_require__(185);
@@ -1060,6 +1066,31 @@ function getGroups(port, { command: _cmd }) {
     }));
 }
 exports.getGroups = getGroups;
+function updateGroup(port, { args }) {
+    if (!args) {
+        (0, logger_1.log)("invalid args, received: ", args);
+        return port.postMessage(response_1.Response.end());
+    }
+    const userArgs = args.split(":");
+    const groupId = Number.parseInt(userArgs[0]);
+    const title = userArgs[1];
+    const color = userArgs[2];
+    const userProvidedCollapsed = userArgs[3];
+    const collapsed = userProvidedCollapsed === "none"
+        ? undefined
+        : userProvidedCollapsed === "true"
+            ? true
+            : false;
+    chrome.tabGroups.update(groupId, {
+        collapsed: collapsed,
+        color: color ? color : undefined,
+        title: title ? title : undefined
+    }).then((group) => __awaiter(this, void 0, void 0, function* () {
+        (0, logger_1.log)("Updated group ", JSON.stringify(group));
+        return port.postMessage(response_1.Response.end());
+    }));
+}
+exports.updateGroup = updateGroup;
 
 
 /***/ }),
@@ -1186,10 +1217,50 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateTabs = exports.closeTabs = exports.switchToTab = exports.getTabs = exports.getRecentlyClosedTabs = exports.duplicateTab = exports.newTab = void 0;
+exports.updateTabs = exports.closeTabs = exports.switchToTab = exports.getTabs = exports.getRecentlyClosedTabs = exports.duplicateTab = exports.newTab = exports.newGroupTab = void 0;
 const logger_1 = __webpack_require__(614);
 const response_1 = __webpack_require__(392);
 const utils_1 = __webpack_require__(185);
+function newGroupTab(port, { args }) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const startTime = Date.now();
+        if (!args) {
+            (0, logger_1.log)("missing args in new group tab");
+            return port.postMessage(response_1.Response.end());
+        }
+        try {
+            const userArgs = args.split(":");
+            if (userArgs.length !== 4) {
+                (0, logger_1.log)("missing some args in new group tab");
+                return port.postMessage(response_1.Response.end());
+            }
+            (0, logger_1.log)(`Starting newGroupTab with args ${userArgs}`);
+            const tabId = Number(userArgs[0]);
+            const windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined;
+            const groupTitle = userArgs[2];
+            const groupColor = userArgs[3];
+            const groupId = yield chrome.tabs.group({ createProperties: { windowId }, tabIds: [tabId] });
+            if (groupTitle !== "" || groupColor !== "") {
+                yield chrome.tabGroups.update(groupId, { title: groupTitle || undefined, color: (groupColor || undefined) });
+            }
+            (0, logger_1.log)(`Sending back a new group Id ${groupId} for tab ${windowId}:${tabId}`);
+            port.postMessage(response_1.Response.data(`${groupId}`));
+            const endTime = Date.now();
+            (0, logger_1.log)(`ending newGroupTab in ${endTime - startTime} ms`);
+            yield (0, utils_1.delay)(10);
+            return port.postMessage(response_1.Response.end());
+        }
+        catch (e) {
+            const endTime = Date.now();
+            port.postMessage(response_1.Response.data(`[Error] ${(_a = e.message) !== null && _a !== void 0 ? _a : e.toString()}`));
+            (0, logger_1.log)(`ending newGroupTab in ${endTime - startTime} ms`);
+            yield (0, utils_1.delay)(10);
+            return port.postMessage(response_1.Response.end());
+        }
+    });
+}
+exports.newGroupTab = newGroupTab;
 function newTab(port, { args }) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!args) {
@@ -1212,7 +1283,7 @@ function newTab(port, { args }) {
 }
 exports.newTab = newTab;
 function duplicateTab(port, { args }) {
-    var _a, _b, _c;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         if (!args) {
             (0, logger_1.log)("missing args in duplicate-tab");
@@ -1240,8 +1311,8 @@ function duplicateTab(port, { args }) {
                     url: tab.url,
                     active: newTab.active,
                     domain: tab.url ? new URL(tab.url).hostname : "",
-                    lastAccessed: (_a = newTab.lastAccessed) !== null && _a !== void 0 ? _a : 0,
-                    index: (_b = newTab.index) !== null && _b !== void 0 ? _b : 0,
+                    lastAccessed: newTab.lastAccessed ? Math.round(newTab.lastAccessed) : 0,
+                    index: (_a = newTab.index) !== null && _a !== void 0 ? _a : 0,
                 }];
             port.postMessage(response_1.Response.data(response));
         }
@@ -1258,7 +1329,7 @@ function duplicateTab(port, { args }) {
                     active: tab.active,
                     domain: tab.url ? new URL(tab.url).hostname : "",
                     lastAccessed: 0,
-                    index: (_c = tab.index) !== null && _c !== void 0 ? _c : 0,
+                    index: (_b = tab.index) !== null && _b !== void 0 ? _b : 0,
                 }];
             port.postMessage(response_1.Response.data(response));
         }
@@ -1278,18 +1349,18 @@ function getRecentlyClosedTabs(port, { command: _cmd }) {
             .filter((t) => !!t);
         (0, logger_1.log)("Sending back ", sessionTabs.length, " recently closed tabs");
         const tabs = sessionTabs.map((tab) => {
-            var _a, _b, _c, _d;
+            var _a, _b;
             return ({
-                id: (_a = tab.lastAccessed) !== null && _a !== void 0 ? _a : Math.floor(Math.random() * 1000),
+                id: tab.lastAccessed ? Math.round(tab.lastAccessed) : Math.floor(Math.random() * 1000),
                 windowId: tab.windowId,
-                groupId: (_b = tab.groupId) !== null && _b !== void 0 ? _b : -1,
+                groupId: (_a = tab.groupId) !== null && _a !== void 0 ? _a : -1,
                 title: tab.title,
                 pinned: tab.pinned,
                 url: tab.url,
                 active: tab.active,
                 domain: tab.url ? new URL(tab.url).hostname : "",
-                lastAccessed: (_c = tab.lastAccessed) !== null && _c !== void 0 ? _c : 0,
-                index: (_d = tab.index) !== null && _d !== void 0 ? _d : 0,
+                lastAccessed: tab.lastAccessed ? Math.round(tab.lastAccessed) : 0,
+                index: (_b = tab.index) !== null && _b !== void 0 ? _b : 0,
             });
         });
         port.postMessage(response_1.Response.data(tabs));
@@ -1311,7 +1382,7 @@ function getTabs(port, { command: _cmd, args }) {
         }
         (0, logger_1.log)("Sending back ", returnedTabs.length, " tabs");
         const tabs = returnedTabs.map((tab) => {
-            var _a, _b;
+            var _a;
             return ({
                 id: tab.id,
                 windowId: tab.windowId,
@@ -1321,7 +1392,7 @@ function getTabs(port, { command: _cmd, args }) {
                 url: tab.url,
                 active: tab.active,
                 domain: tab.url ? new URL(tab.url).hostname : "",
-                lastAccessed: (_b = tab.lastAccessed) !== null && _b !== void 0 ? _b : 0,
+                lastAccessed: tab.lastAccessed ? Math.round(tab.lastAccessed) : 0,
                 index: tab.index,
             });
         });
@@ -1395,6 +1466,7 @@ function updateTabs(port, { args }) {
         const windowId = Number.parseInt(userArgs[1]);
         const tabIndex = Number.parseInt(userArgs[2]);
         const userProvidedPin = userArgs[3];
+        const shouldBeUngrouped = userArgs[4];
         if (userProvidedPin === 'true') {
             yield chrome.tabs.update(tabId, { pinned: true });
             (0, logger_1.log)("successfully pinned tab ", tabId);
@@ -1404,8 +1476,20 @@ function updateTabs(port, { args }) {
             (0, logger_1.log)("successfully unpinned tab ", tabId);
         }
         if (tabIndex !== -2) {
-            yield chrome.tabs.move(tabId, { index: tabIndex, windowId: windowId });
+            const movedTabResponse = yield chrome.tabs.move(tabId, { index: tabIndex, windowId: windowId });
             (0, logger_1.log)(`successfully moved tab ${windowId}:${tabId} to index ${tabIndex}`);
+            if (shouldBeUngrouped === 'true') {
+                let movedTab;
+                if (Array.isArray(movedTabResponse)) {
+                    movedTab = movedTabResponse[0];
+                    if (movedTab)
+                        yield chrome.tabs.ungroup(movedTab.id);
+                }
+                else {
+                    movedTab = movedTabResponse;
+                    yield chrome.tabs.ungroup(movedTab.id);
+                }
+            }
         }
         return port.postMessage(response_1.Response.end());
     });

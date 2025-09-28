@@ -10,4 +10,5 @@ var GroupsCmd = &cobra.Command{
 
 func init() {
 	GroupsCmd.AddCommand(GetGroupsCmd)
+	GroupsCmd.AddCommand(UpdateGroupCmd)
 }

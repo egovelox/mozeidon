@@ -3,6 +3,7 @@ import { Command } from "../models/command"
 import { log } from "../logger"
 import { Response } from "../models/response"
 import { delay } from "../utils"
+import { GroupColor } from "../models/group-colors"
 
 export function getGroups(port: Port, { command: _cmd }: Command) {
   chrome.tabGroups.query({}).then(async (groups) => {
@@ -14,3 +15,31 @@ export function getGroups(port: Port, { command: _cmd }: Command) {
   })
 }
 
+export function updateGroup(port: Port, { args }: Command) {
+  if (!args) {
+    log("invalid args, received: ", args)
+    return port.postMessage(Response.end())
+  }
+  const userArgs = args.split(":")
+  const groupId = Number.parseInt(userArgs[0])
+  const title = userArgs[1]
+  const color = userArgs[2] as GroupColor
+  const userProvidedCollapsed = userArgs[3]
+  const collapsed = userProvidedCollapsed === "none"
+    ? undefined
+    : userProvidedCollapsed === "true"
+    ? true
+    : false
+
+  chrome.tabGroups.update(
+    groupId,
+    {
+      collapsed: collapsed,
+      color: color ? color : undefined,
+      title: title ? title : undefined
+    }
+  ).then(async (group) => {
+    log("Updated group ", JSON.stringify(group))
+    return port.postMessage(Response.end())
+  })
+}

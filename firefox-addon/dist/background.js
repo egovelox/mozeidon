@@ -465,6 +465,10 @@ function handler(port, cmd) {
                 return (0, history_1.deleteHistory)(port, cmd);
             case command_1.CommandName.GET_GROUPS:
                 return (0, groups_1.getGroups)(port, cmd);
+            case command_1.CommandName.UPDATE_GROUP:
+                return (0, groups_1.updateGroup)(port, cmd);
+            case command_1.CommandName.NEW_GROUP_TAB:
+                return yield (0, tabs_1.newGroupTab)(port, cmd);
             default:
                 (0, logger_1.log)("unknown command received in handler");
                 return port.postMessage(response_1.Response.end());
@@ -515,6 +519,8 @@ var CommandName;
     CommandName["UPDATE_TAB"] = "update-tab";
     CommandName["DUPLICATE_TAB"] = "duplicate-tab";
     CommandName["GET_GROUPS"] = "get-groups";
+    CommandName["UPDATE_GROUP"] = "update-group";
+    CommandName["NEW_GROUP_TAB"] = "new-group-tab";
 })(CommandName || (exports.CommandName = CommandName = {}));
 
 
@@ -1047,19 +1053,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getGroups = void 0;
+exports.updateGroup = exports.getGroups = void 0;
 const logger_1 = __webpack_require__(614);
 const response_1 = __webpack_require__(392);
 const utils_1 = __webpack_require__(185);
 function getGroups(port, { command: _cmd }) {
     browser.tabGroups.query({}).then((groups) => __awaiter(this, void 0, void 0, function* () {
         (0, logger_1.log)("Sending back ", groups.length, " groups");
+        (0, logger_1.log)("Sending back groups: ", JSON.stringify(groups));
         port.postMessage(response_1.Response.data(groups));
-        yield (0, utils_1.delay)(40);
+        yield (0, utils_1.delay)(10);
         return port.postMessage(response_1.Response.end());
     }));
 }
 exports.getGroups = getGroups;
+function updateGroup(port, { args }) {
+    if (!args) {
+        (0, logger_1.log)("invalid args, received: ", args);
+        return port.postMessage(response_1.Response.end());
+    }
+    const userArgs = args.split(":");
+    const groupId = Number.parseInt(userArgs[0]);
+    const title = userArgs[1];
+    const color = userArgs[2];
+    const userProvidedCollapsed = userArgs[3];
+    const collapsed = userProvidedCollapsed === "none"
+        ? undefined
+        : userProvidedCollapsed === "true"
+            ? true
+            : false;
+    browser.tabGroups.update(groupId, {
+        collapsed: collapsed,
+        color: color ? color : undefined,
+        title: title ? title : undefined
+    }).then((group) => __awaiter(this, void 0, void 0, function* () {
+        (0, logger_1.log)("Updated group ", JSON.stringify(group));
+        return port.postMessage(response_1.Response.end());
+    }));
+}
+exports.updateGroup = updateGroup;
 
 
 /***/ }),
@@ -1186,10 +1218,50 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateTabs = exports.closeTabs = exports.switchToTab = exports.getTabs = exports.getRecentlyClosedTabs = exports.duplicateTab = exports.newTab = void 0;
+exports.updateTabs = exports.closeTabs = exports.switchToTab = exports.getTabs = exports.getRecentlyClosedTabs = exports.duplicateTab = exports.newTab = exports.newGroupTab = void 0;
 const logger_1 = __webpack_require__(614);
 const response_1 = __webpack_require__(392);
 const utils_1 = __webpack_require__(185);
+function newGroupTab(port, { args }) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const startTime = Date.now();
+        if (!args) {
+            (0, logger_1.log)("missing args in new group tab");
+            return port.postMessage(response_1.Response.end());
+        }
+        try {
+            const userArgs = args.split(":");
+            if (userArgs.length !== 4) {
+                (0, logger_1.log)("missing some args in new group tab");
+                return port.postMessage(response_1.Response.end());
+            }
+            (0, logger_1.log)(`Starting newGroupTab with args ${userArgs}`);
+            const tabId = Number(userArgs[0]);
+            const windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined;
+            const groupTitle = userArgs[2];
+            const groupColor = userArgs[3];
+            const groupId = yield browser.tabs.group({ createProperties: { windowId }, tabIds: [tabId] });
+            if (groupTitle !== "" || groupColor !== "") {
+                yield browser.tabGroups.update(groupId, { title: groupTitle || undefined, color: (groupColor || undefined) });
+            }
+            (0, logger_1.log)(`Sending back a new groupId ${groupId} for tab ${windowId}:${tabId}`);
+            port.postMessage(response_1.Response.data(`${groupId}`));
+            const endTime = Date.now();
+            (0, logger_1.log)(`ending newGroupTab in ${endTime - startTime} ms`);
+            yield (0, utils_1.delay)(10);
+            return port.postMessage(response_1.Response.end());
+        }
+        catch (e) {
+            const endTime = Date.now();
+            port.postMessage(response_1.Response.data(`[Error] ${(_a = e.message) !== null && _a !== void 0 ? _a : e.toString()}`));
+            (0, logger_1.log)(`ending newGroupTab in ${endTime - startTime} ms`);
+            yield (0, utils_1.delay)(10);
+            return port.postMessage(response_1.Response.end());
+        }
+    });
+}
+exports.newGroupTab = newGroupTab;
 function newTab(port, { args }) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!args) {
@@ -1326,7 +1398,7 @@ function getTabs(port, { command: _cmd, args }) {
             });
         });
         port.postMessage(response_1.Response.data(tabs));
-        yield (0, utils_1.delay)(40);
+        yield (0, utils_1.delay)(10);
         return port.postMessage(response_1.Response.end());
     }));
 }
@@ -1395,6 +1467,7 @@ function updateTabs(port, { args }) {
         const windowId = Number.parseInt(userArgs[1]);
         const tabIndex = Number.parseInt(userArgs[2]);
         const shouldPin = userArgs[3];
+        const shouldBeUngrouped = userArgs[4];
         if (shouldPin === 'true') {
             yield browser.tabs.update(tabId, { pinned: true });
             (0, logger_1.log)("successfully pinned tab ", tabId);
@@ -1404,8 +1477,20 @@ function updateTabs(port, { args }) {
             (0, logger_1.log)("successfully unpinned tab ", tabId);
         }
         if (tabIndex !== -2) {
-            yield browser.tabs.move(tabId, { index: tabIndex, windowId: windowId });
+            const movedTabResponse = yield browser.tabs.move(tabId, { index: tabIndex, windowId: windowId });
             (0, logger_1.log)(`successfully moved tab ${windowId}:${tabId} to index ${tabIndex}`);
+            if (shouldBeUngrouped === 'true') {
+                let movedTab;
+                if (Array.isArray(movedTabResponse)) {
+                    movedTab = movedTabResponse[0];
+                    if (movedTab)
+                        yield browser.tabs.ungroup(movedTab.id);
+                }
+                else {
+                    movedTab = movedTabResponse;
+                    yield browser.tabs.ungroup(movedTab.id);
+                }
+            }
         }
         return port.postMessage(response_1.Response.end());
     });

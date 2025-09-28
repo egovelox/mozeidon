@@ -3,6 +3,49 @@ import { Command } from "../models/command"
 import { log } from "../logger"
 import { Response } from "../models/response"
 import { delay } from "../utils"
+import { GroupColor } from "../models/group-colors"
+
+export async function newGroupTab(port: Port, { args }: Command) {
+  // create a new group from a given tab
+  const startTime = Date.now()
+  if (!args) {
+    log("missing args in new group tab")
+    return port.postMessage(Response.end())
+  }
+  try {
+    const userArgs = args.split(":")
+    if (userArgs.length !== 4) {
+      log("missing some args in new group tab")
+      return port.postMessage(Response.end())
+    }
+    log(`Starting newGroupTab with args ${userArgs}`)
+    const tabId = Number(userArgs[0])
+    const windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined
+    const groupTitle = userArgs[2]
+    const groupColor = userArgs[3]
+    
+    const groupId = await (browser.tabs as any).group({createProperties: {windowId}, tabIds: [tabId] })
+    if (groupTitle !== "" || groupColor !== "") {
+      await (browser as any).tabGroups.update(
+        groupId, 
+        {title: groupTitle || undefined, color: (groupColor || undefined) as GroupColor | undefined}
+      )
+    }
+    log(`Sending back a new groupId ${groupId} for tab ${windowId}:${tabId}`)
+    port.postMessage(Response.data(`${groupId}`))
+    const endTime = Date.now()
+    log(`ending newGroupTab in ${endTime - startTime} ms`)
+    // pause 10ms, or this end message may be received before the message above
+    await delay(10)
+    return port.postMessage(Response.end())
+  } catch(e) {
+    const endTime = Date.now()
+    port.postMessage(Response.data(`[Error] ${e.message ?? e.toString()}`))
+    log(`ending newGroupTab in ${endTime - startTime} ms`)
+    await delay(10)
+    return port.postMessage(Response.end())
+  }
+}
 
 export async function newTab(port: Port, { args }: Command) {
   if (!args) {
@@ -137,8 +180,8 @@ export function getTabs(port: Port, { command: _cmd, args }: Command) {
       index: tab.index,
     }))
     port.postMessage(Response.data(tabs))
-    // pause 40ms, or this end message may be received before the message above
-    await delay(40)
+    // pause 10ms, or this end message may be received before the message above
+    await delay(10)
     return port.postMessage(Response.end())
   })
 }
@@ -217,6 +260,7 @@ export async function updateTabs(port: Port, { args }: Command) {
   const windowId = Number.parseInt(userArgs[1])
   const tabIndex = Number.parseInt(userArgs[2])
   const shouldPin = userArgs[3]
+  const shouldBeUngrouped = userArgs[4]
 
   // first check if tab should be pinned or unpinned
   if (shouldPin === 'true') {
@@ -230,8 +274,19 @@ export async function updateTabs(port: Port, { args }: Command) {
 
   // -2 is default for tabIndex, meaning the user did not requested to update the index
   if (tabIndex !== -2) {
-    await browser.tabs.move(tabId, {index: tabIndex, windowId: windowId })
+    const movedTabResponse = await browser.tabs.move(tabId, {index: tabIndex, windowId: windowId })
     log(`successfully moved tab ${windowId}:${tabId} to index ${tabIndex}`)
+    if (shouldBeUngrouped === 'true') {
+      let movedTab
+      if (Array.isArray(movedTabResponse)) {
+        movedTab = (movedTabResponse as browser.tabs.Tab[])[0]
+        if (movedTab)
+        await (browser.tabs as any).ungroup(movedTab.id)
+      } else {
+        movedTab = movedTabResponse as browser.tabs.Tab
+        await (browser.tabs as any).ungroup(movedTab.id)
+      }
+    }
   }
 
   return port.postMessage(Response.end())

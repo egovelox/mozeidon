@@ -4,13 +4,14 @@ import { Port } from "./models/port"
 import { Response } from "./models/response"
 import { getBookmarks } from "./services/bookmarks"
 import { writeBookmark } from "./services/bookmarks-writer"
-import { getGroups } from "./services/groups"
+import { getGroups, updateGroup } from "./services/groups"
 import { deleteHistory, getHistory } from "./services/history"
 import {
   closeTabs,
   duplicateTab,
   getRecentlyClosedTabs,
   getTabs,
+  newGroupTab,
   newTab,
   switchToTab,
   updateTabs,
@@ -43,6 +44,10 @@ export async function handler(port: Port, cmd: Command) {
       return deleteHistory(port, cmd)
     case CommandName.GET_GROUPS:
       return getGroups(port, cmd)
+    case CommandName.UPDATE_GROUP:
+      return updateGroup(port, cmd)
+    case CommandName.NEW_GROUP_TAB:
+      return await newGroupTab(port, cmd)
     default:
       log("unknown command received in handler")
       return port.postMessage(Response.end())

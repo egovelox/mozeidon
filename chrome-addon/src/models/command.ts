@@ -11,6 +11,8 @@ export enum CommandName {
   UPDATE_TAB = "update-tab",
   DUPLICATE_TAB = "duplicate-tab",
   GET_GROUPS = "get-groups",
+  UPDATE_GROUP = "update-group",
+  NEW_GROUP_TAB = "new-group-tab",
 }
 export type Command = {
   command: CommandName

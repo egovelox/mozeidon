@@ -5,7 +5,7 @@ import (
 	"github.com/egovelox/mozeidon/browser/core/models"
 )
 
-func (a *App) TabsUpdate(tabId int64, windowId int64, tabIndex int64, userProvidedPin bool, pin bool) {
+func (a *App) TabsUpdate(tabId int64, windowId int64, tabIndex int64, userProvidedPin bool, pin bool, shouldBeUngrouped bool) {
 	pinArg := "none"
 
 	if userProvidedPin {
@@ -15,7 +15,7 @@ func (a *App) TabsUpdate(tabId int64, windowId int64, tabIndex int64, userProvid
 	<-a.browser.Send(
 		models.Command{
 			Command: "update-tab",
-			Args:    fmt.Sprintf("%d:%d:%d:%s", tabId, windowId, tabIndex, pinArg),
+			Args:    fmt.Sprintf("%d:%d:%d:%s:%t", tabId, windowId, tabIndex, pinArg, shouldBeUngrouped),
 		},
 	)
 }

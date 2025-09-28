@@ -3,6 +3,49 @@ import { Command } from "../models/command"
 import { log } from "../logger"
 import { Response } from "../models/response"
 import { delay } from "../utils"
+import { GroupColor } from "../models/group-colors"
+
+export async function newGroupTab(port: Port, { args }: Command) {
+  // create a new group from a given tab
+  const startTime = Date.now()
+  if (!args) {
+    log("missing args in new group tab")
+    return port.postMessage(Response.end())
+  }
+  try {
+    const userArgs = args.split(":")
+    if (userArgs.length !== 4) {
+      log("missing some args in new group tab")
+      return port.postMessage(Response.end())
+    }
+    log(`Starting newGroupTab with args ${userArgs}`)
+    const tabId = Number(userArgs[0])
+    const windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined
+    const groupTitle = userArgs[2]
+    const groupColor = userArgs[3]
+    
+    const groupId = await chrome.tabs.group({createProperties: {windowId}, tabIds: [tabId] })
+    if (groupTitle !== "" || groupColor !== "") {
+      await chrome.tabGroups.update(
+        groupId, 
+        {title: groupTitle || undefined, color: (groupColor || undefined) as GroupColor | undefined}
+      )
+    }
+    log(`Sending back a new group Id ${groupId} for tab ${windowId}:${tabId}`)
+    port.postMessage(Response.data(`${groupId}`))
+    const endTime = Date.now()
+    log(`ending newGroupTab in ${endTime - startTime} ms`)
+    // pause 10ms, or this end message may be received before the message above
+    await delay(10)
+    return port.postMessage(Response.end())
+  } catch(e) {
+    const endTime = Date.now()
+    port.postMessage(Response.data(`[Error] ${e.message ?? e.toString()}`))
+    log(`ending newGroupTab in ${endTime - startTime} ms`)
+    await delay(10)
+    return port.postMessage(Response.end())
+  }
+}
 
 export async function newTab(port: Port, { args }: Command) {
   if (!args) {
@@ -52,7 +95,8 @@ export async function duplicateTab(port: Port, { args }: Command) {
       url: tab.url,
       active: newTab.active,
       domain: tab.url ? new URL(tab.url).hostname : "",
-      lastAccessed: newTab.lastAccessed ?? 0,
+      // we need integer, but chrome lastAccessed has microseconds ( firefox does not )
+      lastAccessed: newTab.lastAccessed ? Math.round(newTab.lastAccessed) : 0,
       index: newTab.index ?? 0,
     }]
     port.postMessage(Response.data(response))
@@ -91,7 +135,8 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
 
       log("Sending back ", sessionTabs.length, " recently closed tabs")
       const tabs = sessionTabs.map((tab) => ({
-        id: tab.lastAccessed ?? Math.floor(Math.random() * 1000),
+        // we need integer, but chrome lastAccessed has microseconds ( firefox does not )
+        id: tab.lastAccessed ? Math.round(tab.lastAccessed) : Math.floor(Math.random() * 1000),
         windowId: tab.windowId,
         groupId: tab.groupId ?? -1,
         title: tab.title,
@@ -99,7 +144,7 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
         url: tab.url,
         active: tab.active,
         domain: tab.url ? new URL(tab.url).hostname : "",
-        lastAccessed: tab.lastAccessed ?? 0,
+        lastAccessed: tab.lastAccessed ? Math.round(tab.lastAccessed) : 0,
         index: tab.index ?? 0,
       }))
       port.postMessage(Response.data(tabs))
@@ -132,7 +177,8 @@ export function getTabs(port: Port, { command: _cmd, args }: Command) {
       url: tab.url,
       active: tab.active,
       domain: tab.url ? new URL(tab.url).hostname : "",
-      lastAccessed: tab.lastAccessed ?? 0,
+      // we need integer, but chrome lastAccessed has microseconds ( firefox does not )
+      lastAccessed: tab.lastAccessed ? Math.round(tab.lastAccessed) : 0,
       index: tab.index,
     }))
     port.postMessage(Response.data(tabs))
@@ -216,6 +262,7 @@ export async function updateTabs(port: Port, { args }: Command) {
   const windowId = Number.parseInt(userArgs[1])
   const tabIndex = Number.parseInt(userArgs[2])
   const userProvidedPin = userArgs[3]
+  const shouldBeUngrouped = userArgs[4]
 
   // first check if tab should be pinned or unpinned
   if (userProvidedPin === 'true') {
@@ -229,8 +276,19 @@ export async function updateTabs(port: Port, { args }: Command) {
 
   // -2 is default for tabIndex, meaning the user did not requested to update the index
   if (tabIndex !== -2) {
-    await chrome.tabs.move(tabId, {index: tabIndex, windowId: windowId })
+    const movedTabResponse = await chrome.tabs.move(tabId, {index: tabIndex, windowId: windowId })
     log(`successfully moved tab ${windowId}:${tabId} to index ${tabIndex}`)
+    if (shouldBeUngrouped === 'true') {
+      let movedTab: chrome.tabs.Tab
+      if (Array.isArray(movedTabResponse)) {
+        movedTab = movedTabResponse[0]
+        if (movedTab)
+        await chrome.tabs.ungroup(movedTab.id as number)
+      } else {
+        movedTab = movedTabResponse
+        await chrome.tabs.ungroup(movedTab.id as number)
+      }
+    }
   }
 
   return port.postMessage(Response.end())
