@@ -6,7 +6,7 @@ type Tabs struct {
 
 type TabsWithGroups struct {
 	Items  []Tab   `json:"data"`
-	Groups []Group `json:"groups,omitempty"`
+	Groups []Group `json:"groups"`
 }
 
 type Tab struct {
