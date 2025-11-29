@@ -261,8 +261,9 @@ export async function updateTabs(port: Port, { args }: Command) {
   const tabId = Number.parseInt(userArgs[0])
   const windowId = Number.parseInt(userArgs[1])
   const tabIndex = Number.parseInt(userArgs[2])
-  const userProvidedPin = userArgs[3]
-  const shouldBeUngrouped = userArgs[4]
+  const groupId = Number.parseInt(userArgs[3])
+  const userProvidedPin = userArgs[4]
+  const shouldBeUngrouped = userArgs[5]
 
   // first check if tab should be pinned or unpinned
   if (userProvidedPin === 'true') {
@@ -272,6 +273,15 @@ export async function updateTabs(port: Port, { args }: Command) {
   if (userProvidedPin === 'false') {
     await chrome.tabs.update(tabId, { pinned: false })
     log("successfully unpinned tab ", tabId)
+  }
+
+  // -2 is default for groupId, meaning the user did not requested to update the group-id
+  if (groupId !== -2) {
+    if (groupId === -1) {
+      await chrome.tabs.ungroup([tabId])
+    } else {
+      await chrome.tabs.group({tabIds: [tabId], groupId})
+    }
   }
 
   // -2 is default for tabIndex, meaning the user did not requested to update the index

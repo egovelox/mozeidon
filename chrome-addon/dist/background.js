@@ -1465,8 +1465,9 @@ function updateTabs(port, { args }) {
         const tabId = Number.parseInt(userArgs[0]);
         const windowId = Number.parseInt(userArgs[1]);
         const tabIndex = Number.parseInt(userArgs[2]);
-        const userProvidedPin = userArgs[3];
-        const shouldBeUngrouped = userArgs[4];
+        const groupId = Number.parseInt(userArgs[3]);
+        const userProvidedPin = userArgs[4];
+        const shouldBeUngrouped = userArgs[5];
         if (userProvidedPin === 'true') {
             yield chrome.tabs.update(tabId, { pinned: true });
             (0, logger_1.log)("successfully pinned tab ", tabId);
@@ -1474,6 +1475,14 @@ function updateTabs(port, { args }) {
         if (userProvidedPin === 'false') {
             yield chrome.tabs.update(tabId, { pinned: false });
             (0, logger_1.log)("successfully unpinned tab ", tabId);
+        }
+        if (groupId !== -2) {
+            if (groupId === -1) {
+                yield chrome.tabs.ungroup([tabId]);
+            }
+            else {
+                yield chrome.tabs.group({ tabIds: [tabId], groupId });
+            }
         }
         if (tabIndex !== -2) {
             const movedTabResponse = yield chrome.tabs.move(tabId, { index: tabIndex, windowId: windowId });
