@@ -1284,17 +1284,22 @@ function newTab(port, { args }) {
 }
 exports.newTab = newTab;
 function duplicateTab(port, { args }) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         if (!args) {
             (0, logger_1.log)("missing args in duplicate-tab");
             return port.postMessage(response_1.Response.end());
         }
+        let windowId = undefined;
+        let tabIndex = undefined;
+        let isTabPinned = undefined;
         try {
             const userArgs = args.split(":");
             const tabId = Number(userArgs[0]);
-            const windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined;
+            windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined;
             const tab = yield browser.tabs.get(tabId);
+            tabIndex = tab.index;
+            isTabPinned = tab.pinned;
             (0, logger_1.log)("duplicating tab: ", JSON.stringify(tab));
             const newTab = yield browser.tabs.create({
                 active: false,
@@ -1314,12 +1319,18 @@ function duplicateTab(port, { args }) {
                     domain: tab.url ? new URL(tab.url).hostname : "",
                     lastAccessed: 0,
                     index: (_a = newTab.index) !== null && _a !== void 0 ? _a : 0,
+                    groupId: (_b = newTab.groupId) !== null && _b !== void 0 ? _b : -1,
                 }];
             port.postMessage(response_1.Response.data(response));
         }
         catch (e) {
             (0, logger_1.log)("error while duplicating tab", JSON.stringify(e));
-            const tab = yield browser.tabs.create({ active: false });
+            const tab = yield browser.tabs.create({
+                active: false,
+                windowId,
+                index: tabIndex !== undefined ? tabIndex + 1 : undefined,
+                pinned: isTabPinned,
+            });
             (0, logger_1.log)("defaults to creating a new empty tab");
             const response = [{
                     id: tab.id,
@@ -1329,8 +1340,9 @@ function duplicateTab(port, { args }) {
                     url: tab.url,
                     active: tab.active,
                     domain: tab.url ? new URL(tab.url).hostname : "",
-                    lastAccessed: (_b = tab.lastAccessed) !== null && _b !== void 0 ? _b : 0,
+                    lastAccessed: 0,
                     index: (_c = tab.index) !== null && _c !== void 0 ? _c : 0,
+                    groupId: (_d = tab.groupId) !== null && _d !== void 0 ? _d : -1,
                 }];
             port.postMessage(response_1.Response.data(response));
         }

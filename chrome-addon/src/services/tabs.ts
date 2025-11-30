@@ -73,11 +73,17 @@ export async function duplicateTab(port: Port, { args }: Command) {
     return port.postMessage(Response.end())
   }
 
+  let windowId: number | undefined = undefined
+  let tabIndex: number | undefined = undefined
+  let isTabPinned: boolean | undefined = undefined
+
   try {
     const userArgs = args.split(":")
     const tabId = Number(userArgs[0])
-    const windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined
+    windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined
     const tab = await chrome.tabs.get(tabId)
+    tabIndex = tab.index
+    isTabPinned = tab.pinned
     log("duplicating tab: ", JSON.stringify(tab))
     const newTab = await chrome.tabs.create({
       active: false,
@@ -96,13 +102,20 @@ export async function duplicateTab(port: Port, { args }: Command) {
       active: newTab.active,
       domain: tab.url ? new URL(tab.url).hostname : "",
       // we need integer, but chrome lastAccessed has microseconds ( firefox does not )
-      lastAccessed: newTab.lastAccessed ? Math.round(newTab.lastAccessed) : 0,
+      // we created the tab with active: false, to this tab was not accessed yet
+      lastAccessed: 0,
       index: newTab.index ?? 0,
+      groupId: newTab.groupId ?? -1,
     }]
     port.postMessage(Response.data(response))
   } catch (e) {
     log("error while duplicating tab", JSON.stringify(e))
-    const tab = await chrome.tabs.create({ active: false })
+    const tab = await chrome.tabs.create({ 
+      active: false,
+      windowId,
+      index: tabIndex !== undefined ? tabIndex + 1 : undefined,
+      pinned: isTabPinned,
+    })
     log("defaults to creating a new empty tab")
     const response = [{
       id: tab.id,
@@ -115,6 +128,7 @@ export async function duplicateTab(port: Port, { args }: Command) {
       // we created the tab with active: false, to this tab was not accessed yet
       lastAccessed: 0,
       index: tab.index ?? 0,
+      groupId: tab.groupId ?? -1,
     }]
     port.postMessage(Response.data(response))
   }
