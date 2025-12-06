@@ -15,7 +15,7 @@ import {
   switchToTab,
   updateTabs,
 } from "./services/tabs"
-import { getGroups, updateGroup } from "./services/groups"
+import { getGroups, moveGroup, updateGroup } from "./services/groups"
 
 export async function handler(port: Port, cmd: Command) {
   switch (cmd.command) {
@@ -46,6 +46,8 @@ export async function handler(port: Port, cmd: Command) {
       return getGroups(port, cmd)
     case CommandName.UPDATE_GROUP:
       return updateGroup(port, cmd)
+    case CommandName.MOVE_GROUP:
+      return moveGroup(port, cmd)
     case CommandName.NEW_GROUP_TAB:
       return await newGroupTab(port, cmd)
     default:

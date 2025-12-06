@@ -10,6 +10,7 @@ import (
 )
 
 var groupId int64
+var index int64
 var collapsed bool
 var groupColor string
 var groupTitle string
@@ -17,7 +18,7 @@ var groupTitle string
 var UpdateGroupCmd = &cobra.Command{
 	Use:   "update",
 	Short: `Update a given group`,
-	Long:  "Update a given group's collapsed status and/or color and/or title",
+	Long:  "Update a given group's collapsed status and/or color and/or title or index",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		app, err := core.NewApp()
@@ -31,12 +32,21 @@ var UpdateGroupCmd = &cobra.Command{
 			return
 		}
 
+		if index < -1 {
+			fmt.Printf("[Error] Invalid index. When provided, it must be positive")
+			return
+		}
+
 		userProvidedCollapsed := false
 		if cmd.Flag("collapsed").Changed {
 			userProvidedCollapsed = true
 		}
 
-		app.GroupsUpdate(groupId, groupTitle, groupColor, userProvidedCollapsed, collapsed)
+		if index >= 0 {
+			app.GroupsMove(groupId, index)
+		} else {
+			app.GroupsUpdate(groupId, groupTitle, groupColor, userProvidedCollapsed, collapsed)
+		}
 
 	},
 }
@@ -51,5 +61,10 @@ func init() {
 		StringVarP(&groupColor, "color", "c", "", "the group color")
 	UpdateGroupCmd.Flags().
 		BoolVar(&collapsed, "collapsed", false, "whether the group should be collapsed")
-	UpdateGroupCmd.MarkFlagsOneRequired("title", "color", "collapsed")
+	UpdateGroupCmd.Flags().
+		Int64VarP(&index, "index", "i", -1, "the group's first tab index")
+	UpdateGroupCmd.MarkFlagsOneRequired("title", "color", "collapsed", "index")
+	UpdateGroupCmd.MarkFlagsMutuallyExclusive("index", "title")
+	UpdateGroupCmd.MarkFlagsMutuallyExclusive("index", "color")
+	UpdateGroupCmd.MarkFlagsMutuallyExclusive("index", "collapsed")
 }

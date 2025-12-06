@@ -4,7 +4,7 @@ import { Port } from "./models/port"
 import { Response } from "./models/response"
 import { getBookmarks } from "./services/bookmarks"
 import { writeBookmark } from "./services/bookmarks-writer"
-import { getGroups, updateGroup } from "./services/groups"
+import { getGroups, moveGroup, updateGroup } from "./services/groups"
 import { deleteHistory, getHistory } from "./services/history"
 import {
   closeTabs,
@@ -46,6 +46,8 @@ export async function handler(port: Port, cmd: Command) {
       return getGroups(port, cmd)
     case CommandName.UPDATE_GROUP:
       return updateGroup(port, cmd)
+    case CommandName.MOVE_GROUP:
+      return moveGroup(port, cmd)
     case CommandName.NEW_GROUP_TAB:
       return await newGroupTab(port, cmd)
     default:

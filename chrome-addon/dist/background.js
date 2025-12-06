@@ -467,6 +467,8 @@ function handler(port, cmd) {
                 return (0, groups_1.getGroups)(port, cmd);
             case command_1.CommandName.UPDATE_GROUP:
                 return (0, groups_1.updateGroup)(port, cmd);
+            case command_1.CommandName.MOVE_GROUP:
+                return (0, groups_1.moveGroup)(port, cmd);
             case command_1.CommandName.NEW_GROUP_TAB:
                 return yield (0, tabs_1.newGroupTab)(port, cmd);
             default:
@@ -520,6 +522,7 @@ var CommandName;
     CommandName["DUPLICATE_TAB"] = "duplicate-tab";
     CommandName["GET_GROUPS"] = "get-groups";
     CommandName["UPDATE_GROUP"] = "update-group";
+    CommandName["MOVE_GROUP"] = "move-group";
     CommandName["NEW_GROUP_TAB"] = "new-group-tab";
 })(CommandName || (exports.CommandName = CommandName = {}));
 
@@ -1053,7 +1056,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateGroup = exports.getGroups = void 0;
+exports.moveGroup = exports.updateGroup = exports.getGroups = void 0;
 const logger_1 = __webpack_require__(614);
 const response_1 = __webpack_require__(392);
 const utils_1 = __webpack_require__(185);
@@ -1091,6 +1094,21 @@ function updateGroup(port, { args }) {
     }));
 }
 exports.updateGroup = updateGroup;
+function moveGroup(port, { args }) {
+    if (!args) {
+        (0, logger_1.log)("invalid args, received: ", args);
+        return port.postMessage(response_1.Response.end());
+    }
+    const userArgs = args.split(":");
+    const groupId = Number.parseInt(userArgs[0]);
+    const firstTabIndex = Number.parseInt(userArgs[1]);
+    chrome.tabGroups.move(groupId, { index: firstTabIndex })
+        .then((group) => __awaiter(this, void 0, void 0, function* () {
+        (0, logger_1.log)("Moved group ", JSON.stringify(group));
+        return port.postMessage(response_1.Response.end());
+    }));
+}
+exports.moveGroup = moveGroup;
 
 
 /***/ }),

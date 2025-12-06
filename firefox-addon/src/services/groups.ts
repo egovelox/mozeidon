@@ -51,3 +51,20 @@ export function updateGroup(port: Port, { args }: Command) {
     return port.postMessage(Response.end())
   })
 }
+
+export function moveGroup(port: Port, { args }: Command) {
+  log("move group", args)
+  if (!args) {
+    log("invalid args, received: ", args)
+    return port.postMessage(Response.end())
+  }
+  const userArgs = args.split(":")
+  const groupId = Number.parseInt(userArgs[0])
+  const firstTabIndex = Number.parseInt(userArgs[1]);
+
+  (browser as any).tabGroups.move(groupId, {index: firstTabIndex})
+    .then(async (group: unknown) => {
+    log("Moved group ", JSON.stringify(group))
+    return port.postMessage(Response.end())
+  })
+}
