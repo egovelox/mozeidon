@@ -4,7 +4,7 @@
   "description": "background script for mozeidon firefox-addon",
   "author": "egovelox@protonmail.com",
   "license": "MIT",
-  "scripts": {    
+  "scripts": {
     "prettier": "prettier --write 'src/**/*.ts'",
     "build": "webpack --devtool false"
   },
@@ -14,11 +14,12 @@
   },
   "dependencies": {
     "md5": "2.3.0",
-    "valibot": "1.1.0"
+    "valibot": "1.1.0",
+    "webextension-polyfill": "0.12.0"
   },
   "devDependencies": {
-    "@types/firefox-webext-browser": "120.0.4",
     "@types/md5": "2.3.5",
+    "@types/webextension-polyfill": "0.12.4",
     "prettier": "3.6.2",
     "ts-loader": "9.5.1",
     "typescript": "~5.1.3",

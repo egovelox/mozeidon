@@ -1,1 +1,2 @@
-export type Port = browser.runtime.Port
+import { Runtime } from "webextension-polyfill"
+export type Port = Runtime.Port

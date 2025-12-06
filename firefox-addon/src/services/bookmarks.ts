@@ -9,10 +9,11 @@ import { Port } from "../models/port"
 import { Response } from "../models/response"
 import { delay, isDefined } from "../utils"
 import md5 from "md5"
+import { bookmarks, Bookmarks } from "webextension-polyfill"
 
 const inMemoryBookmarkMap = new Map<
   string,
-  browser.bookmarks.BookmarkTreeNode
+  Bookmarks.BookmarkTreeNode
 >()
 
 export function getBookmarks(port: Port, { args }: Command) {
@@ -35,7 +36,7 @@ export function getBookmarks(port: Port, { args }: Command) {
   const chunkSizeInput = parseInt(receivedParams[1])
   const receivedHashMD5 = receivedParams[2] ?? ""
 
-  browser.bookmarks
+  bookmarks
     .getRecent(maxInput ? maxInput : MAX_BOOKMARK_COUNT)
     .then(async (bookmarks) => {
 
@@ -87,7 +88,7 @@ export function getBookmarks(port: Port, { args }: Command) {
     })
 }
 
-async function processChunk(items: browser.bookmarks.BookmarkTreeNode[]) {
+async function processChunk(items: Bookmarks.BookmarkTreeNode[]) {
   const bms = []
   for (const p of await getBmParentTitles(
     items.filter((item) => isDefined(item.url) && item.type === BOOKMARK_TYPE)
@@ -104,12 +105,12 @@ async function processChunk(items: browser.bookmarks.BookmarkTreeNode[]) {
 
 class BookmarksGroup {
   ok: boolean = false
-  bookmarks: browser.bookmarks.BookmarkTreeNode[] = []
+  bookmarks: Bookmarks.BookmarkTreeNode[] = []
   parentPath: string[] = []
-  constructor(bm: browser.bookmarks.BookmarkTreeNode) {
+  constructor(bm: Bookmarks.BookmarkTreeNode) {
     this.bookmarks.push(bm)
   }
-  addNew(bm: browser.bookmarks.BookmarkTreeNode) {
+  addNew(bm: Bookmarks.BookmarkTreeNode) {
     this.bookmarks.push(bm)
   }
   setOk() {
@@ -121,20 +122,20 @@ class BookmarksGroup {
   }
 }
 
-type CompletedBookmarks = (browser.bookmarks.BookmarkTreeNode & {
+type CompletedBookmarks = (Bookmarks.BookmarkTreeNode & {
   parentPath: string
 })[]
-async function getBmParentTitles(bms: browser.bookmarks.BookmarkTreeNode[]) {
-  const bookmarks: CompletedBookmarks = []
+async function getBmParentTitles(bms: Bookmarks.BookmarkTreeNode[]) {
+  const bookmarkItems: CompletedBookmarks = []
 
   // 1. first divide betweem complete and uncomplete bookmarks
   // complete means the bookmark has no folder,
   const reducer = (
     result: {
       complete: CompletedBookmarks
-      uncomplete: browser.bookmarks.BookmarkTreeNode[]
+      uncomplete: Bookmarks.BookmarkTreeNode[]
     },
-    current: browser.bookmarks.BookmarkTreeNode
+    current: Bookmarks.BookmarkTreeNode
   ) => {
     if (current.parentId !== ROOT_BOOKMARK_ID) {
       result.uncomplete.push(current)
@@ -174,10 +175,10 @@ async function getBmParentTitles(bms: browser.bookmarks.BookmarkTreeNode[]) {
   for (const [key, v] of parentIdsMap) {
     let parentId = key
     while (!v.ok) {
-      let parent: browser.bookmarks.BookmarkTreeNode | undefined =
+      let parent: Bookmarks.BookmarkTreeNode | undefined =
         inMemoryBookmarkMap.get(parentId)
       if (!parent) {
-        const parents = await browser.bookmarks.get(parentId)
+        const parents = await bookmarks.get(parentId)
         parent = parents[0]
         inMemoryBookmarkMap.set(parent.id, parent)
       }
@@ -194,17 +195,17 @@ async function getBmParentTitles(bms: browser.bookmarks.BookmarkTreeNode[]) {
       }
     }
     for (const bookmark of v.bookmarks) {
-      bookmarks.push({ ...bookmark, parentPath: `/${v.parentPath.join("/")}/` })
+      bookmarkItems.push({ ...bookmark, parentPath: `/${v.parentPath.join("/")}/` })
     }
     parentIdsMap.delete(key)
   }
 
   // 4. add already complete bookmarks
-  bookmarks.push(...complete)
+  bookmarkItems.push(...complete)
 
   // 5. ensure all bookmarks are sorted with first lastAdded
   const sortPredicate = (a: number, b: number) => (a > b ? -1 : 1)
-  bookmarks.sort((a, b) => sortPredicate(a.dateAdded || 0, b.dateAdded || 0))
+  bookmarkItems.sort((a, b) => sortPredicate(a.dateAdded || 0, b.dateAdded || 0))
 
-  return bookmarks
+  return bookmarkItems
 }
