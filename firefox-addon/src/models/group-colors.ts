@@ -1,1 +1,10 @@
-export type GroupColor = "blue" | "cyan" | "green" | "grey" | "pink" | "purple" | "orange" | "red" | "yellow"
+export type GroupColor =
+  | "blue"
+  | "cyan"
+  | "green"
+  | "grey"
+  | "pink"
+  | "purple"
+  | "orange"
+  | "red"
+  | "yellow"

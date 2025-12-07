@@ -1,7 +1,6 @@
 package tabs
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -29,7 +28,7 @@ var NewTabCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, args []string) {
 		app, err := core.NewApp()
 		if err != nil {
-			fmt.Println(err)
+			core.PrintError(err.Error())
 			return
 		}
 		app.NewTab(strings.Join(args, " "))

@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"os"
 
 	"github.com/egovelox/mozeidon/browser/core/models"
 )
@@ -26,16 +27,25 @@ func (a *App) TabsGet(recentlyClosed bool, latest10First bool) <-chan models.Tab
 
 	go func() {
 		defer close(channel)
+		returnCode := 0
 		for result := range a.browser.Send(
 			models.Command{
 				Command: commandName,
 				Args:    args,
 			},
 		) {
+			// Check for error response
+			if checkForError(result.Data) {
+				returnCode = 1
+				continue
+			}
+
 			tabs := models.Tabs{}
-			// TODO: handle error
 			json.Unmarshal(result.Data, &tabs)
 			channel <- tabs
+		}
+		if returnCode != 0 {
+			os.Exit(1)
 		}
 	}()
 

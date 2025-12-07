@@ -1,8 +1,6 @@
 package history
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/egovelox/mozeidon/core"
@@ -19,7 +17,7 @@ var DeleteHistoryCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, _ []string) {
 		app, err := core.NewApp()
 		if err != nil {
-			fmt.Println(err)
+			core.PrintError(err.Error())
 			return
 		}
 		app.HistoryDelete(url, all)

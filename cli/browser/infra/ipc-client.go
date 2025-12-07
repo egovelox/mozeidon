@@ -31,7 +31,15 @@ func (ipc *IpcClient) Send(
 		defer close(channel)
 		for {
 			// TODO: handle error
-			message, _ := ipc.Read()
+			message, err := ipc.Read()
+			if err != nil {
+				println(
+					fmt.Sprintf(
+						`{"error": "[Error] Cannot connect via ipc with host."}`,
+					),
+				)
+				os.Exit(1)
+			}
 			if message.MsgType > 0 {
 				if string(message.Data) == `{"data":"end"}` {
 					break
@@ -54,7 +62,7 @@ func NewIpcClient(host string) *IpcClient {
 	if err != nil {
 		println(
 			fmt.Sprintf(
-				`{"error": "Cannot connect via ipc with host: %s"}`,
+				`{"error": "[Error] Cannot connect via ipc with host: %s"}`,
 				host,
 			),
 		)
@@ -66,7 +74,7 @@ func NewIpcClient(host string) *IpcClient {
 		if err != nil {
 			println(
 				fmt.Sprintf(
-					`{"error": "Cannot read via ipc with host: %s"}`,
+					`{"error": "[Error] Cannot read via ipc with host: %s"}`,
 					host,
 				),
 			)

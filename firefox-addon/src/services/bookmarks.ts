@@ -8,7 +8,7 @@ import { log } from "../logger"
 import { Command } from "../models/command"
 import { Port } from "../models/port"
 import { Response } from "../models/response"
-import { delay, isDefined } from "../utils"
+import { delay, handleError, isDefined } from "../utils"
 import md5 from "md5"
 import browser from "webextension-polyfill"
 
@@ -17,83 +17,91 @@ const inMemoryBookmarkMap = new Map<
   browser.Bookmarks.BookmarkTreeNode
 >()
 
-export function getBookmarks(port: Port, { args }: Command) {
+export async function getBookmarks(port: Port, { args }: Command) {
   const startTime = Date.now()
-  if (!args) {
-    log("missing args in get-bookmarks")
-    return port.postMessage(Response.end())
-  }
+  try {
+    if (!args) {
+      log("missing args in get-bookmarks")
+      return port.postMessage(Response.end())
+    }
 
-  const receivedParams = args.split(":")
+    const receivedParams = args.split(":")
 
-  if (receivedParams.length < 2) {
-    log(
-      `invalid args in get-bookmarks: received ${args}, expected a string combining two integers like "0:0"`
+    if (receivedParams.length < 2) {
+      log(
+        `invalid args in get-bookmarks: received ${args}, expected a string combining two integers like "0:0"`
+      )
+      return port.postMessage(Response.end())
+    }
+
+    const maxInput = parseInt(receivedParams[0])
+    const chunkSizeInput = parseInt(receivedParams[1])
+    const receivedHashMD5 = receivedParams[2] ?? ""
+
+    const bookmarks = await browser.bookmarks.getRecent(
+      maxInput ? maxInput : MAX_BOOKMARK_COUNT
     )
-    return port.postMessage(Response.end())
-  }
 
-  const maxInput = parseInt(receivedParams[0])
-  const chunkSizeInput = parseInt(receivedParams[1])
-  const receivedHashMD5 = receivedParams[2] ?? ""
+    const chunkSize = chunkSizeInput ? chunkSizeInput : MAX_BOOKMARK_COUNT
+    const chunks = []
 
-  browser.bookmarks
-    .getRecent(maxInput ? maxInput : MAX_BOOKMARK_COUNT)
-    .then(async (bookmarks) => {
+    // chunk bookmarks
+    for (let i = 0; i < bookmarks.length; i += chunkSize) {
+      const chunk = bookmarks.slice(i, i + chunkSize)
+      chunks.push(chunk)
+    }
 
-      const chunkSize = chunkSizeInput ? chunkSizeInput : MAX_BOOKMARK_COUNT
-      const chunks = []
-
-      // chunk bookmarks
-      for (let i = 0; i < bookmarks.length; i += chunkSize) {
-        const chunk = bookmarks.slice(i, i + chunkSize)
-        chunks.push(chunk)
+    const bookmarksProcessedChunks = []
+    // no parallelism, maintain order of bookmarks
+    for (const chunk of chunks) {
+      const bms = await processChunk(chunk)
+      if (receivedHashMD5) {
+        bookmarksProcessedChunks.push(bms)
+      } else {
+        port.postMessage(Response.data(bms))
       }
+    }
 
-      const bookmarksProcessedChunks = []
-      // no parallelism, maintain order of bookmarks
-      for (const chunk of chunks) {
-        const bms = await processChunk(chunk)
-        if (receivedHashMD5) {
-          bookmarksProcessedChunks.push(bms)
-        } else {
+    if (receivedHashMD5) {
+      // if the received hash is valid, return a simple string "bookmarks_synchronized"
+      log(md5(JSON.stringify(bookmarksProcessedChunks.flat())))
+      log("hash received", receivedHashMD5)
+      if (
+        receivedHashMD5 === md5(JSON.stringify(bookmarksProcessedChunks.flat()))
+      ) {
+        port.postMessage(Response.data("bookmarks_synchronized"))
+        await delay(10)
+        const endTime = Date.now()
+        log(`sending back bookmarks_synchronized in ${endTime - startTime} ms`)
+        return port.postMessage(Response.end())
+      } else {
+        for (const bms of bookmarksProcessedChunks) {
+          // we add a delay to ensure same behaviour as before
+          // TODO : check if we can remove this delay
+          await delay(1)
           port.postMessage(Response.data(bms))
         }
       }
+    }
 
-      if (receivedHashMD5) {
-        // if the received hash is valid, return a simple string "bookmarks_synchronized"
-          log(md5(JSON.stringify(bookmarksProcessedChunks.flat())))
-          log("hash received", receivedHashMD5)
-        if (receivedHashMD5 === md5(JSON.stringify(bookmarksProcessedChunks.flat()))) {
-          port.postMessage(Response.data("bookmarks_synchronized"))
-          await delay(10)
-          const endTime = Date.now()
-          log(`sending back bookmarks_synchronized in ${endTime - startTime} ms`)
-          return port.postMessage(Response.end())
-        } else {
-          for (const bms of bookmarksProcessedChunks) {
-            // we add a delay to ensure same behaviour as before
-            // TODO : check if we can remove this delay
-            await delay(1)
-            port.postMessage(Response.data(bms))
-          }
-        }
-      }
-
-      const endTime = Date.now()
-      log(`sending back bookmarks in ${endTime - startTime} ms`)
-      // pause 100ms, or this end message may be received before the last chunk
-      await delay(100)
-      return port.postMessage(Response.end())
-    })
+    const endTime = Date.now()
+    log(`sending back bookmarks in ${endTime - startTime} ms`)
+    // pause 100ms, or this end message may be received before the last chunk
+    await delay(100)
+    return port.postMessage(Response.end())
+  } catch (e) {
+    return handleError(e, port)
+  }
 }
 
 async function processChunk(items: browser.Bookmarks.BookmarkTreeNode[]) {
   const bms = []
-  const browserItems = BROWSER_FAMILY === 'firefox-family'
-    ? items.filter((item) => isDefined(item.url) && item.type === BOOKMARK_TYPE)
-    : items.filter((item) => isDefined(item.url))
+  const browserItems =
+    BROWSER_FAMILY === "firefox-family"
+      ? items.filter(
+          (item) => isDefined(item.url) && item.type === BOOKMARK_TYPE
+        )
+      : items.filter((item) => isDefined(item.url))
 
   for (const p of await getBmParentTitles(browserItems)) {
     bms.push({
@@ -198,7 +206,10 @@ async function getBmParentTitles(bms: browser.Bookmarks.BookmarkTreeNode[]) {
       }
     }
     for (const bookmark of v.bookmarks) {
-      bookmarkItems.push({ ...bookmark, parentPath: `/${v.parentPath.join("/")}/` })
+      bookmarkItems.push({
+        ...bookmark,
+        parentPath: `/${v.parentPath.join("/")}/`,
+      })
     }
     parentIdsMap.delete(key)
   }
@@ -208,7 +219,9 @@ async function getBmParentTitles(bms: browser.Bookmarks.BookmarkTreeNode[]) {
 
   // 5. ensure all bookmarks are sorted with first lastAdded
   const sortPredicate = (a: number, b: number) => (a > b ? -1 : 1)
-  bookmarkItems.sort((a, b) => sortPredicate(a.dateAdded || 0, b.dateAdded || 0))
+  bookmarkItems.sort((a, b) =>
+    sortPredicate(a.dateAdded || 0, b.dateAdded || 0)
+  )
 
   return bookmarkItems
 }

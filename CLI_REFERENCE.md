@@ -4,12 +4,47 @@ Mozeidon is a CLI tool to control browsers from the Firefox or Chromium families
 
 ## Table of Contents
 
+- [Error Output Format](#error-output-format)
 - [Commands](#commands)
   - [Tabs](#tabs)
   - [Bookmarks](#bookmarks)
-  - [Bookmark (CRUD)](#bookmark-crud)
+  - [Bookmark Operations](#bookmark-operations)
   - [History](#history)
   - [Groups](#groups)
+
+---
+
+## Error Output Format
+
+Mozeidon uses **two different error formats** depending on when the error occurs:
+
+### **Argument Parsing Errors** (Plain Text)
+When you provide invalid command-line arguments (wrong flag types, missing required values, etc.), errors are displayed in **plain text** with usage information:
+
+```
+Error: invalid argument "94798031a" for "-w, --window-id" flag: strconv.ParseInt: parsing "94798031a": invalid syntax
+Usage:
+  mozeidon tabs init-group [flags]
+```
+
+These errors occur **before** the command executes and are handled by the CLI framework (Cobra).
+
+### **Runtime Errors** (JSON)
+When errors occur **during command execution** (connection failures, invalid IDs, browser API errors, etc.), they are output in **JSON format** for easy parsing:
+
+E.g unknown resource inside the web-browser :
+```json
+{"error": "[Error] No group with id: 1757435983351012"}
+```
+E.g connection problem between CLI and native-app :
+```json
+{"error": "[Error] Cannot connect via ipc with host: mozeidon_native_app"}
+```
+
+
+This distinction allows scripts to:
+- Parse structured JSON errors from runtime failures
+- Display human-readable syntax errors for invalid command usage
 
 ---
 
@@ -291,7 +326,7 @@ mozeidon bookmarks -t '{{range .Items}}{{.Title}}: {{.Url}}{{"\n"}}{{end}}'
 
 ---
 
-## Bookmark (CRUD)
+## Bookmark Operations
 
 Create, update, and delete individual bookmarks.
 

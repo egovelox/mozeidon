@@ -9,24 +9,21 @@ export const MAX_HISTORY_ITEMS_COUNT = 100000
 function getBrowserFamily() {
   const { manifest_version } = runtime.getManifest()
 
-  switch(manifest_version) {
+  switch (manifest_version) {
     case 2:
-      return 'firefox-family' as const
+      return "firefox-family" as const
     case 3:
-      return 'chromium-family' as const
+      return "chromium-family" as const
     default:
-      return 'firefox-family' as const
+      return "firefox-family" as const
   }
-
 }
 
-function getRootBookmarkId(browser: 'firefox-family' | 'chromium-family') {
-  switch(browser) {
-    case 'firefox-family':
-      return 'toolbar_____'
-    case 'chromium-family':
-      return '1'
+function getRootBookmarkId(browser: "firefox-family" | "chromium-family") {
+  switch (browser) {
+    case "firefox-family":
+      return "toolbar_____"
+    case "chromium-family":
+      return "1"
   }
-
 }
-

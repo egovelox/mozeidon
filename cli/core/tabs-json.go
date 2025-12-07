@@ -8,14 +8,12 @@ import (
 )
 
 func (a *App) TabsJson(recentlyClosed bool, latest10First bool, withGroups bool) {
-	// TODO: handle error
-
 	channelTabs := a.TabsGet(recentlyClosed, latest10First)
-	tabs := <-channelTabs
+	tabs := <-channelTabs // note: the program may have exited if TabsGet encountered an error
 
 	if withGroups {
 		channelGroups := a.GroupsGet()
-		groups := <-channelGroups
+		groups := <-channelGroups // note: the program may have exited if GroupsGet encountered an error
 		res := models.TabsWithGroups{
 			Items:  tabs.Items,
 			Groups: groups.Items,

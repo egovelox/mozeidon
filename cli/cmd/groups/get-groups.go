@@ -15,7 +15,7 @@ var GetGroupsCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, _ []string) {
 		app, err := core.NewApp()
 		if err != nil {
-			fmt.Println(err)
+			core.PrintError(err.Error())
 			return
 		}
 		channelGroups := app.GroupsGet()

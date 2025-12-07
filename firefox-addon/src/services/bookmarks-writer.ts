@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { log } from "../logger"
 import { ROOT_BOOKMARK_ID, BROWSER_FAMILY } from "../constants"
-import { delay, isDefined } from "../utils"
+import { handleError, isDefined } from "../utils"
 import { Response } from "../models/response"
 import { Command } from "../models/command"
 import { Port } from "../models/port"
@@ -38,10 +38,7 @@ export async function writeBookmark(port: Port, { args }: Command) {
   } catch (e) {
     const endTime = Date.now()
     log(`error in writeBookmark in ${endTime - startTime} ms`, e)
-    port.postMessage(Response.data(`[Error] ${e.message ?? e.toString()}`))
-    // pause 10ms, or this end message may be received before the message above
-    await delay(10)
-    return port.postMessage(Response.end())
+    return handleError(e, port)
   }
 }
 
@@ -280,10 +277,7 @@ async function deleteEmptyFolders(removedBookmarkParentId: string | undefined) {
     }
   }
   if (BROWSER_FAMILY === "chromium-family") {
-    if (
-      children.length !== 0 ||
-      parent.id === ROOT_BOOKMARK_ID
-    ) {
+    if (children.length !== 0 || parent.id === ROOT_BOOKMARK_ID) {
       return
     }
   }

@@ -1,8 +1,6 @@
 package tabs
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/egovelox/mozeidon/core"
@@ -16,7 +14,7 @@ var CloseTabCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, args []string) {
 		app, err := core.NewApp()
 		if err != nil {
-			fmt.Println(err)
+			core.PrintError(err.Error())
 			return
 		}
 		app.TabsClose(args)

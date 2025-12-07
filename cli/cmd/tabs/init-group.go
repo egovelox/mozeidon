@@ -22,12 +22,12 @@ var InitGroupCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, _ []string) {
 		app, err := core.NewApp()
 		if err != nil {
-			fmt.Println(err)
+			core.PrintError(err.Error())
 			return
 		}
 
 		if groupColor != "" && !models.IsValidGroupColor(groupColor) {
-			fmt.Printf("[Error] Invalid tab group color. Allowed colors are: %s\n", models.AllowedColorsString())
+			core.PrintError(fmt.Sprintf("Invalid tab group color. Allowed colors are: %s", models.AllowedColorsString()))
 			return
 		}
 

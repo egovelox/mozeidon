@@ -1,8 +1,6 @@
 package bookmarks
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/egovelox/mozeidon/core"
@@ -40,7 +38,7 @@ var BookmarksCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, _ []string) {
 		app, err := core.NewApp()
 		if err != nil {
-			fmt.Println(err)
+			core.PrintError(err.Error())
 			return
 		}
 		if len(template) > 0 {

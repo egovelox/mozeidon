@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	goTemplates "text/template"
 
@@ -24,31 +23,41 @@ func (a *App) TabsTemplate(template string, recentlyClosed bool, latest10First b
 			args = ""
 		}
 	}
+	
+	returnCode := 0
 	for response := range a.browser.Send(
 		models.Command{
 			Command: commandName,
 			Args:    args,
 		},
 	) {
+		// Check for error response
+		if checkForError(response.Data) {
+			returnCode = 1
+			continue
+		}
 
 		tabs := models.Tabs{}
-		// TODO: handle error
-		json.Unmarshal(response.Data, &tabs)
+		if err := json.Unmarshal(response.Data, &tabs); err != nil {
+			PrintError("Failed to parse tabs data: " + err.Error())
+			returnCode = 1
+			continue
+		}
 
-		t, err := goTemplates.New("tabs-template").
-			Parse(template)
-
+		t, err := goTemplates.New("tabs-template").Parse(template)
 		if err != nil {
-			log.Fatal(err)
+			PrintError("Invalid template: " + err.Error())
 			os.Exit(1)
 		}
 
 		err = t.Execute(os.Stdout, tabs)
-
 		if err != nil {
-			log.Fatal(err)
+			PrintError("Template execution failed: " + err.Error())
 			os.Exit(1)
 		}
-
+	}
+	
+	if returnCode != 0 {
+		os.Exit(1)
 	}
 }

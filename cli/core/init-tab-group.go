@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/egovelox/mozeidon/browser/core/models"
 )
@@ -26,12 +25,13 @@ func (a *App) InitTabGroup(tabId int64, windowId int64, groupTitle string, group
 
 	for result := range channel {
 		if result.Data != nil {
+			if checkForError(result.Data) {
+				returnCode = 1
+				continue
+			}
 			data := models.DataResult{}
 			json.Unmarshal(result.Data, &data)
 			fmt.Println(string(data.Data))
-			if strings.HasPrefix(string(data.Data), "[Error]") {
-				returnCode = 1
-			}
 		}
 	}
 	if returnCode != 0 {

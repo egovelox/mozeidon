@@ -23,17 +23,17 @@ var UpdateGroupCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app, err := core.NewApp()
 		if err != nil {
-			fmt.Println(err)
+			core.PrintError(err.Error())
 			return
 		}
 
 		if groupColor != "" && !models.IsValidGroupColor(groupColor) {
-			fmt.Printf("[Error] Invalid tab group color. Allowed colors are: %s\n", models.AllowedColorsString())
+			core.PrintError(fmt.Sprintf("Invalid tab group color. Allowed colors are: %s", models.AllowedColorsString()))
 			return
 		}
 
 		if index < -1 {
-			fmt.Printf("[Error] Invalid index. When provided, it must be positive")
+			core.PrintError("Invalid index. When provided, it must be positive")
 			return
 		}
 

@@ -1,10 +1,7 @@
 package core
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/egovelox/mozeidon/browser/core/models"
 )
@@ -34,10 +31,7 @@ func (a *App) HistoryDelete(url string, all bool) {
 
 	for result := range channel {
 		if result.Data != nil {
-			data := models.DataResult{}
-			json.Unmarshal(result.Data, &data)
-			if strings.HasPrefix(string(data.Data), "[Error]") {
-				fmt.Println(string(data.Data))
+			if checkForError(result.Data) {
 				returnCode = 1
 			}
 		}
