@@ -1,5 +1,6 @@
 import {
   BOOKMARK_TYPE,
+  BROWSER_FAMILY,
   MAX_BOOKMARK_COUNT,
   ROOT_BOOKMARK_ID,
 } from "../constants"
@@ -9,11 +10,11 @@ import { Port } from "../models/port"
 import { Response } from "../models/response"
 import { delay, isDefined } from "../utils"
 import md5 from "md5"
-import { bookmarks, Bookmarks } from "webextension-polyfill"
+import browser from "webextension-polyfill"
 
 const inMemoryBookmarkMap = new Map<
   string,
-  Bookmarks.BookmarkTreeNode
+  browser.Bookmarks.BookmarkTreeNode
 >()
 
 export function getBookmarks(port: Port, { args }: Command) {
@@ -36,7 +37,7 @@ export function getBookmarks(port: Port, { args }: Command) {
   const chunkSizeInput = parseInt(receivedParams[1])
   const receivedHashMD5 = receivedParams[2] ?? ""
 
-  bookmarks
+  browser.bookmarks
     .getRecent(maxInput ? maxInput : MAX_BOOKMARK_COUNT)
     .then(async (bookmarks) => {
 
@@ -88,11 +89,13 @@ export function getBookmarks(port: Port, { args }: Command) {
     })
 }
 
-async function processChunk(items: Bookmarks.BookmarkTreeNode[]) {
+async function processChunk(items: browser.Bookmarks.BookmarkTreeNode[]) {
   const bms = []
-  for (const p of await getBmParentTitles(
-    items.filter((item) => isDefined(item.url) && item.type === BOOKMARK_TYPE)
-  )) {
+  const browserItems = BROWSER_FAMILY === 'firefox-family'
+    ? items.filter((item) => isDefined(item.url) && item.type === BOOKMARK_TYPE)
+    : items.filter((item) => isDefined(item.url))
+
+  for (const p of await getBmParentTitles(browserItems)) {
     bms.push({
       id: p.id,
       title: p.title,
@@ -105,12 +108,12 @@ async function processChunk(items: Bookmarks.BookmarkTreeNode[]) {
 
 class BookmarksGroup {
   ok: boolean = false
-  bookmarks: Bookmarks.BookmarkTreeNode[] = []
+  bookmarks: browser.Bookmarks.BookmarkTreeNode[] = []
   parentPath: string[] = []
-  constructor(bm: Bookmarks.BookmarkTreeNode) {
+  constructor(bm: browser.Bookmarks.BookmarkTreeNode) {
     this.bookmarks.push(bm)
   }
-  addNew(bm: Bookmarks.BookmarkTreeNode) {
+  addNew(bm: browser.Bookmarks.BookmarkTreeNode) {
     this.bookmarks.push(bm)
   }
   setOk() {
@@ -122,10 +125,10 @@ class BookmarksGroup {
   }
 }
 
-type CompletedBookmarks = (Bookmarks.BookmarkTreeNode & {
+type CompletedBookmarks = (browser.Bookmarks.BookmarkTreeNode & {
   parentPath: string
 })[]
-async function getBmParentTitles(bms: Bookmarks.BookmarkTreeNode[]) {
+async function getBmParentTitles(bms: browser.Bookmarks.BookmarkTreeNode[]) {
   const bookmarkItems: CompletedBookmarks = []
 
   // 1. first divide betweem complete and uncomplete bookmarks
@@ -133,9 +136,9 @@ async function getBmParentTitles(bms: Bookmarks.BookmarkTreeNode[]) {
   const reducer = (
     result: {
       complete: CompletedBookmarks
-      uncomplete: Bookmarks.BookmarkTreeNode[]
+      uncomplete: browser.Bookmarks.BookmarkTreeNode[]
     },
-    current: Bookmarks.BookmarkTreeNode
+    current: browser.Bookmarks.BookmarkTreeNode
   ) => {
     if (current.parentId !== ROOT_BOOKMARK_ID) {
       result.uncomplete.push(current)
@@ -175,10 +178,10 @@ async function getBmParentTitles(bms: Bookmarks.BookmarkTreeNode[]) {
   for (const [key, v] of parentIdsMap) {
     let parentId = key
     while (!v.ok) {
-      let parent: Bookmarks.BookmarkTreeNode | undefined =
+      let parent: browser.Bookmarks.BookmarkTreeNode | undefined =
         inMemoryBookmarkMap.get(parentId)
       if (!parent) {
-        const parents = await bookmarks.get(parentId)
+        const parents = await browser.bookmarks.get(parentId)
         parent = parents[0]
         inMemoryBookmarkMap.set(parent.id, parent)
       }

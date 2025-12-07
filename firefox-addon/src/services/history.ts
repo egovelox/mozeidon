@@ -4,7 +4,7 @@ import { log } from "../logger"
 import { Response } from "../models/response"
 import { MAX_HISTORY_ITEMS_COUNT } from "../constants"
 import { delay } from "../utils"
-import { history } from "webextension-polyfill"
+import browser from "webextension-polyfill"
 
 export function getHistory(port: Port, { args }: Command) {
   if (!args) {
@@ -26,7 +26,7 @@ export function getHistory(port: Port, { args }: Command) {
   log(`chunkSize ${chunkSizeInput}`)
   log(`maxInput ${maxInput}`)
 
-  history
+  browser.history
     .search({
       text: "",
       startTime: 0,
@@ -56,7 +56,7 @@ export function getHistory(port: Port, { args }: Command) {
           url: item.url ?? "https://developer.mozilla.org",
           tc: item.typedCount ?? 0,
           vc: item.visitCount ?? 0,
-          t: item.lastVisitTime ?? 0,
+          t: item.lastVisitTime ? Math.round(item.lastVisitTime) : 0,
         }))
         //.slice(0, maxInput)
 
@@ -79,13 +79,13 @@ export async function deleteHistory(port: Port, { args }: Command) {
   const startTime = Date.now()
   try {
   if (args === "all") {
-    await history.deleteAll()
+    await browser.history.deleteAll()
     const endTime = Date.now()
     log(`Deleted all history in ${endTime - startTime} ms`)
     return port.postMessage(Response.end())
   }
     const url = args
-    await history.deleteUrl({url})
+    await browser.history.deleteUrl({url})
     const endTime = Date.now()
     log(`Deleted history for url ${url} in ${endTime - startTime} ms`)
     return port.postMessage(Response.end())

@@ -12,6 +12,9 @@ module.exports = {
   },
   resolve: {
     extensions: [".ts"],
+    alias: {
+      'webextension-polyfill': require.resolve('webextension-polyfill')
+    }
   },
   module: {
     rules: [
@@ -22,6 +25,10 @@ module.exports = {
     ]
   },
   optimization: {
-   minimize: false
+   minimize: true, // Enable minification to reduce bundle size
+  },
+  performance: {
+    hints: false, // Disable performance warnings
   },
 };
+

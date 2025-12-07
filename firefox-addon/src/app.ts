@@ -3,14 +3,14 @@ import { handler } from "./handler"
 import { log } from "./logger"
 import { Payload } from "./models/payload"
 import { delay } from "./utils"
-import { Runtime, runtime } from "webextension-polyfill"
+import browser from "webextension-polyfill"
 
 log(`Starting ${ADDON_NAME} add-on`)
-let port = runtime.connectNative(ADDON_NAME)
+let port = browser.runtime.connectNative(ADDON_NAME)
 log(`[${ADDON_NAME}] Connected with native application`, port)
 listen(port)
 
-function listen(port: Runtime.Port) {
+function listen(port: browser.Runtime.Port) {
   port.onMessage.addListener((payload: Payload) => {
     log(
       `[${ADDON_NAME}] Got message from native application: ${JSON.stringify(payload)}`
@@ -29,7 +29,7 @@ function listen(port: Runtime.Port) {
     await delay(delayMs)
     log(`[${ADDON_NAME}] Waited ${delayMs}ms...`)
     log(`[${ADDON_NAME}] Trying to reconnect to native application...`)
-    port = runtime.connectNative(ADDON_NAME)
+    port = browser.runtime.connectNative(ADDON_NAME)
     log(`[${ADDON_NAME}] Connected with native application`, port)
     listen(port)
   })

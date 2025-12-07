@@ -1,6 +1,6 @@
 import * as v from "valibot"
 import { log } from "../logger"
-import { ROOT_BOOKMARK_ID } from "../constants"
+import { ROOT_BOOKMARK_ID, BROWSER_FAMILY } from "../constants"
 import { delay, isDefined } from "../utils"
 import { Response } from "../models/response"
 import { Command } from "../models/command"
@@ -12,7 +12,7 @@ import {
   ValidatedBookmarkDeleteRequest,
   ValidatedBookmarkUpdateRequest,
 } from "../models/write-bookmark"
-import { bookmarks, Bookmarks } from "webextension-polyfill"
+import browser from "webextension-polyfill"
 
 export async function writeBookmark(port: Port, { args }: Command) {
   const startTime = Date.now()
@@ -112,8 +112,8 @@ function validateBookmarkWriteRequest(
 }
 
 async function deleteBookmark(params: ValidatedBookmarkDeleteRequest) {
-  const [bookmark] = await bookmarks.get(params.id)
-  await bookmarks.remove(params.id)
+  const [bookmark] = await browser.bookmarks.get(params.id)
+  await browser.bookmarks.remove(params.id)
   await deleteEmptyFolders(bookmark.parentId)
 }
 
@@ -122,7 +122,7 @@ async function createBookmark(params: ValidatedBookmarkCreateRequest) {
 
   if (!folderPath) {
     /* create a bookmark in the browser default location ( e.g Other Bookmarks in firefox ) */
-    return await bookmarks.create({ title, url })
+    return await browser.bookmarks.create({ title, url })
   }
 
   /* remove the first slash before splitting, and then remove the last slash */
@@ -146,7 +146,7 @@ async function createBookmark(params: ValidatedBookmarkCreateRequest) {
      */
     let parentIdFolder = targetId // should be equal to ROOT_BOOKMARK_ID
     for (const toBeCreatedFolder of toBeCreatedFolders) {
-      const res = await bookmarks.create({
+      const res = await browser.bookmarks.create({
         parentId: parentIdFolder,
         title: toBeCreatedFolder,
       })
@@ -155,7 +155,7 @@ async function createBookmark(params: ValidatedBookmarkCreateRequest) {
     /*
      * create the bookmark in the target-folder
      */
-    const created = await bookmarks.create({
+    const created = await browser.bookmarks.create({
       parentId: parentIdFolder,
       title,
       url,
@@ -169,7 +169,7 @@ async function createBookmark(params: ValidatedBookmarkCreateRequest) {
    */
   let parentIdFolder = targetFolder.id
   for (const toBeCreatedFolder of toBeCreatedFolders) {
-    const res = await bookmarks.create({
+    const res = await browser.bookmarks.create({
       parentId: parentIdFolder,
       title: toBeCreatedFolder,
     })
@@ -179,7 +179,7 @@ async function createBookmark(params: ValidatedBookmarkCreateRequest) {
   /*
    * create the bookmark in the target-folder
    */
-  return await bookmarks.create({
+  return await browser.bookmarks.create({
     parentId: parentIdFolder,
     title,
     url,
@@ -191,7 +191,7 @@ async function updateBookmark(params: ValidatedBookmarkUpdateRequest) {
   /*
    * first get the bookmark parentId, needed to deleteEmptyFolders
    */
-  const [{ parentId }] = await bookmarks.get(id)
+  const [{ parentId }] = await browser.bookmarks.get(id)
 
   /*
    * when folderPath is not provided,
@@ -199,7 +199,7 @@ async function updateBookmark(params: ValidatedBookmarkUpdateRequest) {
    * ( here both cannot be undefined, or it would be a delete )
    */
   if (folderPath === undefined) {
-    return await bookmarks.update(id, { title, url })
+    return await browser.bookmarks.update(id, { title, url })
   }
 
   /* remove the first slash before splitting, and then remove the last slash */
@@ -218,13 +218,13 @@ async function updateBookmark(params: ValidatedBookmarkUpdateRequest) {
       targetId,
       toBeCreatedFolders
     )
-    await bookmarks.update(id, { title, url })
+    await browser.bookmarks.update(id, { title, url })
     /*
      * create all necessary folders
      */
     let parentIdFolder = targetId // should be equal to ROOT_BOOKMARK_ID
     for (const toBeCreatedFolder of toBeCreatedFolders) {
-      const res = await bookmarks.create({
+      const res = await browser.bookmarks.create({
         parentId: parentIdFolder,
         title: toBeCreatedFolder,
       })
@@ -233,7 +233,7 @@ async function updateBookmark(params: ValidatedBookmarkUpdateRequest) {
     /*
      * create the bookmark in the target-folder
      */
-    const updated = await bookmarks.move(id, {
+    const updated = await browser.bookmarks.move(id, {
       parentId: parentIdFolder,
     })
     log("updated bookmark from parent: ", targetId, updated)
@@ -245,7 +245,7 @@ async function updateBookmark(params: ValidatedBookmarkUpdateRequest) {
    */
   let parentIdFolder = targetFolder.id
   for (const toBeCreatedFolder of toBeCreatedFolders) {
-    const newFolder = await bookmarks.create({
+    const newFolder = await browser.bookmarks.create({
       parentId: parentIdFolder,
       title: toBeCreatedFolder,
     })
@@ -258,9 +258,9 @@ async function updateBookmark(params: ValidatedBookmarkUpdateRequest) {
    * finally delete empty folders
    */
   if (isDefined(title) || isDefined(url)) {
-    await bookmarks.update(id, { title, url })
+    await browser.bookmarks.update(id, { title, url })
   }
-  await bookmarks.move(id, { parentId: parentIdFolder })
+  await browser.bookmarks.move(id, { parentId: parentIdFolder })
   return await deleteEmptyFolders(parentId)
 }
 
@@ -268,24 +268,34 @@ async function deleteEmptyFolders(removedBookmarkParentId: string | undefined) {
   if (removedBookmarkParentId === undefined) {
     return
   }
-  const [parent] = await bookmarks.get(removedBookmarkParentId)
-  const children = await bookmarks.getChildren(removedBookmarkParentId)
+  const [parent] = await browser.bookmarks.get(removedBookmarkParentId)
+  const children = await browser.bookmarks.getChildren(removedBookmarkParentId)
   /* return if any child exists */
-  if (
-    children.filter((child) => child.type !== "separator").length !== 0 ||
-    parent.id === ROOT_BOOKMARK_ID
-  ) {
-    return
+  if (BROWSER_FAMILY === "firefox-family") {
+    if (
+      children.filter((child) => child.type !== "separator").length !== 0 ||
+      parent.id === ROOT_BOOKMARK_ID
+    ) {
+      return
+    }
+  }
+  if (BROWSER_FAMILY === "chromium-family") {
+    if (
+      children.length !== 0 ||
+      parent.id === ROOT_BOOKMARK_ID
+    ) {
+      return
+    }
   }
   /* else remove this empty folder */
-  await bookmarks.remove(removedBookmarkParentId)
+  await browser.bookmarks.remove(removedBookmarkParentId)
   /* at last, go recursively on the parent of this deleted folder */
   await deleteEmptyFolders(parent.parentId)
 }
 
 async function findTargetFolder(folders: string[]): Promise<{
   targetId: string
-  targetFolder: Bookmarks.BookmarkTreeNode | undefined
+  targetFolder: browser.Bookmarks.BookmarkTreeNode | undefined
   toBeCreatedFolders: string[]
 }> {
   log("findTargetFolder for folders: ", folders)
@@ -295,11 +305,16 @@ async function findTargetFolder(folders: string[]): Promise<{
   // search for folder Infos
   for (const [index, folder] of folders.entries()) {
     let folderFound = false
-    const matches = await bookmarks.search({ title: folder })
+    const matches = await browser.bookmarks.search({ title: folder })
     log(`got matches for ${folder} :`, matches)
     // search among matches for folder Infos
     for (const match of matches) {
-      if (match.type === "folder" && match.parentId === targetId) {
+      /* 
+       * no type props on Chrome to check that a bookmark-node is a folder.
+       * So, instead check that url is undefined
+      if (match.type === 'folder' && match.parentId === targetId) {
+       */
+      if (match.url === undefined && match.parentId === targetId) {
         log("Among matches, found exact match", match.id, match.title)
         folderFound = true
         targetId = match.id

@@ -4,7 +4,7 @@ import { log } from "../logger"
 import { Response } from "../models/response"
 import { delay } from "../utils"
 import { GroupColor } from "../models/group-colors"
-import { tabs, Tabs, tabGroups, sessions } from "webextension-polyfill"
+import browser from "webextension-polyfill"
 
 export async function newGroupTab(port: Port, { args }: Command) {
   // create a new group from a given tab
@@ -25,9 +25,9 @@ export async function newGroupTab(port: Port, { args }: Command) {
     const groupTitle = userArgs[2]
     const groupColor = userArgs[3]
     
-    const groupId = await tabs.group({createProperties: {windowId}, tabIds: [tabId] })
+    const groupId = await browser.tabs.group({createProperties: {windowId}, tabIds: [tabId] })
     if (groupTitle !== "" || groupColor !== "") {
-      await tabGroups.update(
+      await browser.tabGroups.update(
         groupId, 
         {title: groupTitle || undefined, color: (groupColor || undefined) as GroupColor | undefined}
       )
@@ -51,19 +51,19 @@ export async function newGroupTab(port: Port, { args }: Command) {
 export async function newTab(port: Port, { args }: Command) {
   if (!args) {
     log("open empty tab")
-    await tabs.create({})
+    await browser.tabs.create({})
     return port.postMessage(Response.end())
   }
 
   try {
     const url = new URL(args)
     log("open tab at url: ", url)
-    await tabs.create({ url: url.toString() })
+    await browser.tabs.create({ url: url.toString() })
   } catch (_) {
     // if not an url, use google
     const url = `https://www.google.com/search?q=${encodeURIComponent(args)}`
     log("open google tab")
-    await tabs.create({ url })
+    await browser.tabs.create({ url })
   }
   return port.postMessage(Response.end())
 }
@@ -82,11 +82,11 @@ export async function duplicateTab(port: Port, { args }: Command) {
     const userArgs = args.split(":")
     const tabId = Number(userArgs[0])
     windowId = userArgs[1] !== "-1" ? Number(userArgs[1]) : undefined
-    const tab = await tabs.get(tabId)
+    const tab = await browser.tabs.get(tabId)
     tabIndex = tab.index
     isTabPinned = tab.pinned
     log("duplicating tab: ", JSON.stringify(tab))
-    const newTab = await tabs.create({
+    const newTab = await browser.tabs.create({
       active: false,
       windowId: windowId,
       url: tab.url,
@@ -103,14 +103,14 @@ export async function duplicateTab(port: Port, { args }: Command) {
       active: newTab.active,
       domain: tab.url ? new URL(tab.url).hostname : "",
       // we created the tab with active: false, to this tab was not accessed yet
-      lastAccessed: 0,
+      lastAccessed: tab.lastAccessed ? Math.round(tab.lastAccessed) : 0,
       index: newTab.index ?? 0,
       groupId: (newTab as any).groupId ?? -1,
     }]
     port.postMessage(Response.data(response))
   } catch (e) {
     log("error while duplicating tab", JSON.stringify(e))
-    const tab = await tabs.create({
+    const tab = await browser.tabs.create({
       active: false,
       windowId,
       index: tabIndex !== undefined ? tabIndex + 1 : undefined,
@@ -126,7 +126,7 @@ export async function duplicateTab(port: Port, { args }: Command) {
       active: tab.active,
       domain: tab.url ? new URL(tab.url).hostname : "",
       // we created the tab with active: false, to this tab was not accessed yet
-      lastAccessed: 0,
+      lastAccessed: tab.lastAccessed ? Math.round(tab.lastAccessed) : 0,
       index: tab.index ?? 0,
       groupId: (tab as any).groupId ?? -1,
     }]
@@ -138,18 +138,18 @@ export async function duplicateTab(port: Port, { args }: Command) {
 }
 
 export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
-  sessions
+  browser.sessions
     .getRecentlyClosed()
     .then(async (sessions) => {
       const sessionTabs = sessions
         .sort((s1, s2) => s2.lastModified - s1.lastModified)
         .filter((session) => session.tab)
         .map((i) => i.tab)
-        .filter((t): t is Tabs.Tab => !!t)
+        .filter((t): t is browser.Tabs.Tab => !!t)
 
       log("Sending back ", sessionTabs.length, " recently closed tabs")
       const tabs = sessionTabs.map((tab) => ({
-        id: tab.lastAccessed ?? Math.floor(Math.random() * 1000),
+        id: tab.lastAccessed ? Math.round(tab.lastAccessed) : Math.floor(Math.random() * 1000),
         groupId: (tab as any).groupId ?? -1,
         windowId: tab.windowId,
         title: tab.title,
@@ -157,7 +157,7 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
         url: tab.url,
         active: tab.active,
         domain: tab.url ? new URL(tab.url).hostname : "",
-        lastAccessed: tab.lastAccessed ?? 0,
+        lastAccessed: tab.lastAccessed ? Math.round(tab.lastAccessed) : 0,
         index: tab.index ?? 0,
       }))
       port.postMessage(Response.data(tabs))
@@ -168,7 +168,7 @@ export function getRecentlyClosedTabs(port: Port, { command: _cmd }: Command) {
 }
 
 export function getTabs(port: Port, { command: _cmd, args }: Command) {
-  tabs.query({}).then(async (browserTabs) => {
+  browser.tabs.query({}).then(async (browserTabs) => {
     let returnedTabs = browserTabs.slice()
 
     // if requested in args, the first 10 items are the 10 latest accessed tabs.
@@ -191,7 +191,7 @@ export function getTabs(port: Port, { command: _cmd, args }: Command) {
       url: tab.url,
       active: tab.active,
       domain: tab.url ? new URL(tab.url).hostname : "",
-      lastAccessed: tab.lastAccessed ?? 0,
+      lastAccessed: tab.lastAccessed ? Math.round(tab.lastAccessed) : 0,
       index: tab.index,
     }))
     port.postMessage(Response.data(tabs))
@@ -222,11 +222,11 @@ export function switchToTab(port: Port, { args }: Command) {
     return port.postMessage(Response.end())
   }
 
-  tabs.query({ windowId }).then((tabItems) => {
+  browser.tabs.query({ windowId }).then((tabItems) => {
     for (let tab of tabItems) {
       if (tab.id === tabId) {
         log("found tab to switch to", tab)
-        tabs.update(tab.id!, { active: true })
+        browser.tabs.update(tab.id!, { active: true })
         break
       }
     }
@@ -249,7 +249,7 @@ export function closeTabs(port: Port, { args }: Command) {
    */
   const tabIds = args.split(",")
 
-  tabs.query({}).then((tabItems) => {
+  browser.tabs.query({}).then((tabItems) => {
     for (let tab of tabItems) {
       if (!tab.id) continue
       if (tabIds.some((id) => `${tab.windowId}:${tab.id}` === id)) {
@@ -259,7 +259,7 @@ export function closeTabs(port: Port, { args }: Command) {
     }
 
     log("closing tabs", tabToCloseIds)
-    tabs.remove(tabToCloseIds)
+    browser.tabs.remove(tabToCloseIds)
   })
 
   return port.postMessage(Response.end())
@@ -280,35 +280,35 @@ export async function updateTabs(port: Port, { args }: Command) {
 
   // first check if tab should be pinned or unpinned
   if (shouldPin === 'true') {
-    await tabs.update(tabId, { pinned: true })
+    await browser.tabs.update(tabId, { pinned: true })
     log("successfully pinned tab ", tabId)
   }
   if (shouldPin === 'false') {
-    await tabs.update(tabId, { pinned: false })
+    await browser.tabs.update(tabId, { pinned: false })
     log("successfully unpinned tab ", tabId)
   }
 
   // -2 is default for groupId, meaning the user did not requested to update the group-id
   if (groupId !== -2) {
     if (groupId === -1) {
-      tabs.ungroup([tabId])
+      browser.tabs.ungroup([tabId])
     } else {
-      await tabs.group({tabIds: [tabId], groupId})
+      await browser.tabs.group({tabIds: [tabId], groupId})
     }
   }
 
   // -2 is default for tabIndex, meaning the user did not requested to update the index
   if (tabIndex !== -2) {
-    const movedTabResponse = await tabs.move(tabId, {index: tabIndex, windowId: windowId })
+    const movedTabResponse = await browser.tabs.move(tabId, {index: tabIndex, windowId: windowId })
     log(`successfully moved tab ${windowId}:${tabId} to index ${tabIndex}`)
     if (shouldBeUngrouped === 'true') {
       if (Array.isArray(movedTabResponse)) {
         if (movedTabResponse[0] && movedTabResponse[0].id !== undefined) {
-          tabs.ungroup(movedTabResponse[0].id)
+          browser.tabs.ungroup(movedTabResponse[0].id)
         }
       } else {
         if (movedTabResponse.id !== undefined) {
-          tabs.ungroup(movedTabResponse.id)
+          browser.tabs.ungroup(movedTabResponse.id)
         }
       }
     }

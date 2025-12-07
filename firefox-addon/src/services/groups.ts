@@ -4,10 +4,10 @@ import { log } from "../logger"
 import { Response } from "../models/response"
 import { delay } from "../utils"
 import { GroupColor } from "../models/group-colors"
-import { tabGroups, TabGroups } from "webextension-polyfill"
+import browser from "webextension-polyfill"
 
 export function getGroups(port: Port, { command: _cmd }: Command) {
-  tabGroups.query({}).then(async (groups: TabGroups.TabGroup[]) => {
+  browser.tabGroups.query({}).then(async (groups: browser.TabGroups.TabGroup[]) => {
     log("Sending back ", groups.length, " groups")
     log("Sending back groups: ", JSON.stringify(groups))
     port.postMessage(Response.data(groups))
@@ -33,7 +33,7 @@ export function updateGroup(port: Port, { args }: Command) {
     ? true
     : false;
 
-  tabGroups.update(
+  browser.tabGroups.update(
     groupId,
     {
       collapsed: collapsed,
@@ -56,7 +56,7 @@ export function moveGroup(port: Port, { args }: Command) {
   const groupId = Number.parseInt(userArgs[0])
   const firstTabIndex = Number.parseInt(userArgs[1]);
 
-  tabGroups.move(groupId, {index: firstTabIndex})
+  browser.tabGroups.move(groupId, {index: firstTabIndex})
     .then(async (group) => {
     log("Moved group ", JSON.stringify(group))
     return port.postMessage(Response.end())
