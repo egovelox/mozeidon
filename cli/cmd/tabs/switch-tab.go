@@ -36,5 +36,5 @@ var SwitchTabCmd = &cobra.Command{
 
 func init() {
 	SwitchTabCmd.Flags().
-		BoolVarP(&open, "open", "o", false, "open browser window")
+		BoolVarP(&open, "open", "o", false, "open firefox browser window ( only for MacOS )")
 }

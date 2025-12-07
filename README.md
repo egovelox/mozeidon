@@ -4,6 +4,7 @@ TLDR;
 - Handle your tabs, bookmarks and history from outside of your web-browser.
 - [🆕 Quick install of the mozeidon-macos-ui brew cask](https://github.com/egovelox/mozeidon-macos-ui?tab=readme-ov-file#homebrew)
 - [🤓 Install of the mozeidon cli](https://github.com/egovelox/mozeidon?tab=readme-ov-file#installation)
+- [📖 CLI Reference Documentation](CLI_REFERENCE.md)
 
 ## Intro
 Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) OR [Google Chrome](https://www.google.com/chrome) tabs, history, and bookmarks. 
@@ -18,7 +19,7 @@ All the code is available here as open-source. You can be sure that :
 - your browsing data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
 - at any time, stopping or removing the mozeidon firefox (or chrome) addon extension will stop or remove all related processes on your machine.
 
-Using the ``mozeidon`` CLI, you can : 
+Using the ``mozeidon`` CLI (see [CLI reference](CLI_REFERENCE.md)), you can : 
 - list all currently opened tabs
 - list recently-closed tabs
 - list current history
@@ -28,12 +29,23 @@ Using the ``mozeidon`` CLI, you can :
 - close a currently opened tab
 - create, delete, update a bookmark
 
-<img width="1512" alt="mozeidon-cli" src="https://github.com/egovelox/mozeidon/assets/56078155/2cfd04c2-d066-49fa-973e-c389e90b1f37">
-<br/><br/>
+| <img width="1512" height="910" alt="mozeidon-cli" src="https://github.com/user-attachments/assets/32b49616-5129-479c-aea6-9490395464c9" /> |
+|:--:|
+| *Example output showing tabs with `jq` formatting* |
 
-<img width="1512" alt="mozeidon-cli-2" src="https://github.com/egovelox/mozeidon/assets/56078155/9ba5c99b-0436-433c-9b73-427f2b3c897f">
-<br/><br/>
+<br/>
 
+| <img width="1512" height="910" alt="mozeidon-cli" src="https://github.com/user-attachments/assets/a3757c8b-652a-4a59-b0b7-5f7dc06a79a6" /> |
+|:--:|
+| *Example output showing tabs with `--go-template` formatting* |
+
+<br/>
+
+| <img width="1512" alt="mozeidon-cli-2" src="https://github.com/egovelox/mozeidon/assets/56078155/9ba5c99b-0436-433c-9b73-427f2b3c897f"> |
+|:--:|
+| *Example output showing tabs within custom `fzf-tmux` script* |
+
+<br/>
 
 ## Architecture
 
@@ -146,6 +158,8 @@ As a last step, you need to install the [Mozeidon CLI](https://github.com/egovel
 ## Mozeidon CLI
 
 The Mozeidon CLI is a lightweight CLI written in ``go``. 
+
+📖 **[Complete CLI Reference Documentation](CLI_REFERENCE.md)**
 
 On MacOS or Linux, you can install it using ``homebrew`` :
 ```bash
