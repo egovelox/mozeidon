@@ -2,7 +2,7 @@
   "description": "Native messaging add-on to interact with mozilla tabs and bookmarks",
   "manifest_version": 2,
   "name": "mozeidon",
-  "version": "1.1",
+  "version": "3.0",
   "icons": {
     "48": "icons/trident.svg"
   },

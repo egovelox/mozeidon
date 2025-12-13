@@ -1,7 +1,7 @@
 {
-  "name": "mozeidon-firefox-addon",
-  "version": "1.0.0",
-  "description": "background script for mozeidon firefox-addon",
+  "name": "mozeidon-chrome-addon",
+  "version": "3.0.0",
+  "description": "background script for mozeidon chrome-addon",
   "author": "egovelox@protonmail.com",
   "license": "MIT",
   "scripts": {

@@ -1,10 +1,10 @@
 # 🔱 Mozeidon 
 
 TLDR;
-- Handle your tabs, bookmarks and history from outside of your web-browser.
-- [🆕 Quick install of the mozeidon-macos-ui brew cask](https://github.com/egovelox/mozeidon-macos-ui?tab=readme-ov-file#homebrew)
+- Handle your tabs, groups, bookmarks and history from outside of your web-browser.
 - [🤓 Install of the mozeidon cli](https://github.com/egovelox/mozeidon?tab=readme-ov-file#installation)
 - [📖 CLI Reference Documentation](CLI_REFERENCE.md)
+- [✨ Desktop applications based on mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#desktop-applications-based-on-mozeidon-cli)
 
 ## Intro
 Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) OR [Google Chrome](https://www.google.com/chrome) tabs, history, and bookmarks. 
@@ -13,7 +13,7 @@ Here you'll find :
 - a guide to complete the [installation](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#installation) of the mozeidon components (see [architecture](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#architecture)).
 - [advanced examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#examples) of the CLI usage (including integration with `fzf` and `fzf-tmux`) 
 - [a Raycast extension](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) built around Mozeidon CLI (for MacOS only)
-- [a MacOS native app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#macos-swift-app-agent) built around Mozeidon CLI (for MacOS only)
+- [a MacOS desktop app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#macos-swift-app-agent) built around Mozeidon CLI (for MacOS only)
 
 All the code is available here as open-source. You can be sure that :
 - your browsing data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
@@ -22,11 +22,13 @@ All the code is available here as open-source. You can be sure that :
 Using the ``mozeidon`` CLI (see [CLI reference](CLI_REFERENCE.md)), you can : 
 - list all currently opened tabs
 - list recently-closed tabs
-- list current history
+- list, delete current history
 - list current bookmarks
 - switch to a currently opened tab
 - open a new tab (empty tab or with target url)
 - close a currently opened tab
+- pin/unpin a currently opened tab
+- group/ungroup a currently opened tab
 - create, delete, update a bookmark
 
 | <img width="1512" height="910" alt="mozeidon-cli" src="https://github.com/user-attachments/assets/32b49616-5129-479c-aea6-9490395464c9" /> |
@@ -75,11 +77,15 @@ The mozeidon addon for Mozilla Firefox can be found here :
 
 [https://addons.mozilla.org/en-US/firefox/addon/mozeidon](https://addons.mozilla.org/en-US/firefox/addon/mozeidon)
 
+Latest version : `3.0` ( previous versions may not work with our latest CLI versions )
+
 ## Mozeidon chrome-addon
 
 The mozeidon addon for Google Chrome can be found here :
 
 [https://chromewebstore.google.com/detail/mozeidon/lipjcjopdojfmfjmnponpjkkccbjoipe](https://chromewebstore.google.com/detail/mozeidon/lipjcjopdojfmfjmnponpjkkccbjoipe)
+
+New version coming soon : `3.0` ( previous versions may not work with our latest CLI versions )
 
 ## Mozeidon native-app
 
@@ -179,6 +185,8 @@ cd mozeidon/cli && go build
 
 ## Examples 
 
+📖 **[Complete CLI Reference Documentation](CLI_REFERENCE.md)**
+
 ### How to use the Mozeidon CLI with ``go-template`` syntax for customized output :
 
 ```bash
@@ -265,7 +273,9 @@ open new tab [C-o]'\
   | xargs -r -I {} sh -c '$HOME/bin/mozeidon tabs new "{}" && open -a firefox'
 ```
 
-## Raycast extension
+## Desktop applications based on mozeidon CLI
+
+### Raycast extension
 
 For MacOS and Firefox users only : see [the Mozeidon Raycast extension](https://www.raycast.com/egovelox/mozeidon).
 
@@ -278,10 +288,12 @@ Note that you cannot list **history items** with this Raycast extension : only *
 ![mozeidon-4](https://github.com/egovelox/mozeidon/assets/56078155/a3b8d378-7fe2-4062-9722-15b4cf7f9d6f)
 
 
-## MacOS swift app-agent
+### MacOS swift app-agent
 
 If you ask for something faster than [Raycast](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) ( which I find quite slow to trigger the search list ),  
 you might take a look at this macOS app [mozeidon-macos-ui](https://github.com/egovelox/mozeidon-macos-ui)
+
+[🆕 Quick install of the mozeidon-macos-ui brew cask](https://github.com/egovelox/mozeidon-macos-ui?tab=readme-ov-file#homebrew)
 
 <img width="640" alt="mozeidon-macos-ui" src="https://github.com/user-attachments/assets/8590a296-3a4d-4287-b362-83804893710e" />
 

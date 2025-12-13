@@ -16,6 +16,6 @@ npm install && npm run build
 Note :
 The source-code was provided in a ``source.zip`` file produced with the command :
 ```bash
-zip -r -FS ./source.zip . --exclude 'icons/' --exclude 'node_modules/*' --exclude '.DS_Store' --exclude 'manifest.json' --exclude 'dist/background.js' --exclude 'mozeidon.zip'
+zip -r -FS ./source.zip . --exclude 'icons/' --exclude 'node_modules/*' --exclude '.DS_Store' --exclude '*.zip'
 ```
 

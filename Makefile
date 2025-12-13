@@ -1,7 +1,7 @@
 build-firefox-addon:
 	cd firefox-addon && ./build.sh
 build-chrome-addon:
-	cd chrome-addon && ./build.sh
+	cd chrome-addon && ./build.local.sh
 build-cli:
 	cd cli && go build
 
