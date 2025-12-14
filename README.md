@@ -275,6 +275,10 @@ open new tab [C-o]'\
 
 ## Desktop applications based on mozeidon CLI
 
+### Swell
+
+[Swell](https://github.com/egovelox/swell) 🏄 🌊 is really fast and plenty of features.
+
 ### Raycast extension
 
 For MacOS and Firefox users only : see [the Mozeidon Raycast extension](https://www.raycast.com/egovelox/mozeidon).
