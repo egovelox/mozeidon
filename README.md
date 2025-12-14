@@ -279,11 +279,14 @@ open new tab [C-o]'\
 
 [Swell](https://github.com/egovelox/swell) 🏄 🌊 is really fast and plenty of features.
 
+<img width="1141" height="686" alt="swell_tabs_panel" src="https://github.com/user-attachments/assets/ccfc7aac-dc02-4dba-97dd-25ee29da3957" />
+
+
 ### Raycast extension
 
 For MacOS and Firefox users only : see [the Mozeidon Raycast extension](https://www.raycast.com/egovelox/mozeidon).
 
-This Raycast extension will not work with Chrome browser. If you use MacOS, see [MacOS swift app-agent](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#macos-swift-app-agent)
+This Raycast extension will not work with Chrome browser. Better see [Swell](https://github.com/egovelox/swell).
 
 Note that you'll first need to complete the installation of Mozeidon components ([Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon), [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app) and [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)).
 
@@ -293,6 +296,12 @@ Note that you cannot list **history items** with this Raycast extension : only *
 
 
 ### MacOS swift app-agent
+
+**Not maintained anymore**.  
+
+Please now switch to [Swell](https://github.com/egovelox/swell) 🏄 🌊 really fast and plenty of features.
+
+**Not maintained anymore**.  
 
 If you ask for something faster than [Raycast](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) ( which I find quite slow to trigger the search list ),  
 you might take a look at this macOS app [mozeidon-macos-ui](https://github.com/egovelox/mozeidon-macos-ui)
