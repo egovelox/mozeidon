@@ -277,7 +277,8 @@ open new tab [C-o]'\
 
 ### Swell
 
-[Swell](https://github.com/egovelox/swell) 🏄 🌊 is really fast and plenty of features.
+[Swell](https://github.com/egovelox/swell) 🏄 🌊 is very fast and has plenty of features  
+( custom shortcuts, chromium or mozilla compatibility, tabs, groups, bookmarks, history ).
 
 <img width="1141" height="686" alt="swell_tabs_panel" src="https://github.com/user-attachments/assets/ccfc7aac-dc02-4dba-97dd-25ee29da3957" />
 
