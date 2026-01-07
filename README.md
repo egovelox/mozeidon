@@ -300,7 +300,7 @@ Note that you cannot list **history items** with this Raycast extension : only *
 
 **Not maintained anymore**.  
 
-Please now switch to [Swell](https://github.com/egovelox/swell) 🏄 🌊 really fast and plenty of features.
+Please now switch to [Swell](https://github.com/egovelox/swell) 🏄 🌊  
 
 **Not maintained anymore**.  
 
