@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/egovelox/mozeidon/browser/core/models"
+	"github.com/egovelox/mozeidon/cmd/flags"
 	"github.com/egovelox/mozeidon/core"
 )
 
@@ -21,7 +22,7 @@ var UpdateGroupCmd = &cobra.Command{
 	Long:  "Update a given group's collapsed status and/or color and/or title or index",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		app, err := core.NewApp()
+		app, err := core.NewAppWithProfile(flags.ProfileID)
 		if err != nil {
 			core.PrintError(err.Error())
 			return

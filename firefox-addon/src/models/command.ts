@@ -14,6 +14,8 @@ export enum CommandName {
   UPDATE_GROUP = "update-group",
   MOVE_GROUP = "move-group",
   NEW_GROUP_TAB = "new-group-tab",
+  UPDATE_PROFILE = "update-profile",
+  GET_WINDOWS = "get-windows",
 }
 export type Command = {
   command: CommandName

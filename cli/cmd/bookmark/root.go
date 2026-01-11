@@ -5,7 +5,8 @@ import (
 )
 
 var BookmarkCmd = &cobra.Command{
-	Use: "bookmark",
+	Use:   "bookmark",
+	Short: "Bookmark modification",
 }
 
 func init() {

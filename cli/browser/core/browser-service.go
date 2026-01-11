@@ -9,6 +9,6 @@ type BrowserService struct {
 	ports.CommandSender
 }
 
-func NewBrowserService() *BrowserService {
-	return &BrowserService{infra.NewIpcClient("mozeidon_native_app")}
+func NewBrowserService(ipcName string) *BrowserService {
+	return &BrowserService{infra.NewIpcClient(ipcName)}
 }

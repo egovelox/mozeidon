@@ -3,6 +3,7 @@ package bookmarks
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/egovelox/mozeidon/cmd/flags"
 	"github.com/egovelox/mozeidon/core"
 )
 
@@ -36,7 +37,7 @@ var BookmarksCmd = &cobra.Command{
 		`     - if the hash is matched, you will get a simple string : "bookmarks_synchronized"` +
 		"\n\n",
 	Run: func(_ *cobra.Command, _ []string) {
-		app, err := core.NewApp()
+		app, err := core.NewAppWithProfile(flags.ProfileID)
 		if err != nil {
 			core.PrintError(err.Error())
 			return

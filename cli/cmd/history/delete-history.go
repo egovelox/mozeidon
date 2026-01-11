@@ -3,6 +3,7 @@ package history
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/egovelox/mozeidon/cmd/flags"
 	"github.com/egovelox/mozeidon/core"
 )
 
@@ -15,7 +16,7 @@ var DeleteHistoryCmd = &cobra.Command{
 	Long:  "Delete all history or by url",
 	Args:  cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
-		app, err := core.NewApp()
+		app, err := core.NewAppWithProfile(flags.ProfileID)
 		if err != nil {
 			core.PrintError(err.Error())
 			return

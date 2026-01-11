@@ -2,7 +2,7 @@
   "description": "Native messaging add-on to interact with mozilla tabs and bookmarks",
   "manifest_version": 2,
   "name": "mozeidon",
-  "version": "3.0",
+  "version": "4.0",
   "icons": {
     "48": "icons/trident.svg"
   },
@@ -18,5 +18,5 @@
   "browser_action": {
     "default_icon": "icons/trident.svg"
   },
-  "permissions": ["nativeMessaging", "tabs", "sessions", "bookmarks", "history", "tabGroups"]
+  "permissions": ["nativeMessaging", "tabs", "sessions", "bookmarks", "history", "tabGroups", "storage"]
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/egovelox/mozeidon/browser/core/models"
+	"github.com/egovelox/mozeidon/cmd/flags"
 	"github.com/egovelox/mozeidon/core"
 )
 
@@ -15,7 +16,7 @@ var DeleteBookmarkCmd = &cobra.Command{
 		"Required argument: a string bookmark id",
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		app, err := core.NewApp()
+		app, err := core.NewAppWithProfile(flags.ProfileID)
 		if err != nil {
 			core.PrintError(err.Error())
 			return

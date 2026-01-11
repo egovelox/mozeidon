@@ -1,19 +1,21 @@
 # 🔱 Mozeidon 
 
 TLDR;
-- Handle your tabs, groups, bookmarks and history from outside of your web-browser.
+- Handle your tabs, groups, bookmarks and history from outside of your web-browsers.
 - [🤓 Install of the mozeidon cli](https://github.com/egovelox/mozeidon?tab=readme-ov-file#installation)
 - [📖 CLI Reference Documentation](CLI_REFERENCE.md)
 - [✨ Desktop applications based on mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#desktop-applications-based-on-mozeidon-cli)
 
 ## Intro
-Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) OR [Google Chrome](https://www.google.com/chrome) tabs, history, and bookmarks. 
+Mozeidon is essentially a CLI written in [Go](https://go.dev/) to handle [Mozilla Firefox](https://www.mozilla.org/firefox/) OR [Google Chrome](https://www.google.com/chrome) tabs, history, and bookmarks.  
+Other web-browsers are also supported if derived from Firefox ( e.g Firefox Developer Edition, Zen )  
+or from Chromium ( e.g Edge, Arc ).
+
 
 Here you'll find :
 - a guide to complete the [installation](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#installation) of the mozeidon components (see [architecture](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#architecture)).
 - [advanced examples](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#examples) of the CLI usage (including integration with `fzf` and `fzf-tmux`) 
-- [a Raycast extension](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#raycast-extension) built around Mozeidon CLI (for MacOS only)
-- [a MacOS desktop app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#macos-swift-app-agent) built around Mozeidon CLI (for MacOS only)
+- [Swell UI (linux or macOS)](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#swell) built around Mozeidon CLI
 
 All the code is available here as open-source. You can be sure that :
 - your browsing data (tabs, bookmarks, etc) will remain private and safe: mozeidon will never share anything outside of your system.
@@ -22,14 +24,17 @@ All the code is available here as open-source. You can be sure that :
 Using the ``mozeidon`` CLI (see [CLI reference](CLI_REFERENCE.md)), you can : 
 - list all currently opened tabs
 - list recently-closed tabs
-- list, delete current history
-- list current bookmarks
 - switch to a currently opened tab
 - open a new tab (empty tab or with target url)
 - close a currently opened tab
 - pin/unpin a currently opened tab
 - group/ungroup a currently opened tab
+- bookmark a tab
+- list current bookmarks
 - create, delete, update a bookmark
+- list current history
+- delete a history item
+- do all these actions above, choosing a specific browser or profile ( see profiles in the [CLI Reference](CLI_REFERENCE.md), since version 4.0.0 )
 
 | <img width="1512" height="910" alt="mozeidon-cli" src="https://github.com/user-attachments/assets/32b49616-5129-479c-aea6-9490395464c9" /> |
 |:--:|
@@ -64,12 +69,20 @@ Mozeidon is built on ipc and native-messaging protocols, using the following com
 - the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli), another Go program, interacts with the Mozeidon native-app. It sends commands to and receive data from the native-app - via ipc protocol.
 
 
-## Installation 
+## CLI Installation 
 
 You need to install at least 3 components :
 - the [Mozeidon firefox add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-firefox-addon) or the [Mozeidon chrome add-on](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-chrome-addon)
 - the [Mozeidon native-app](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-native-app)
 - the [Mozeidon CLI](https://github.com/egovelox/mozeidon/tree/main?tab=readme-ov-file#mozeidon-cli)
+
+Alternatively, you can download our [Swell UI](https://github.com/egovelox/swell), which bundles the last two components :  
+then just install the browser add-on, and you will be able to use the bundled CLI.
+
+📌 Important note :  
+Please ensure you are using the same version (e.g `4.0.0`) for the add-on and for the other components  
+( native-app and CLI ).
+
 
 ## Mozeidon firefox-addon
 
@@ -77,7 +90,8 @@ The mozeidon addon for Mozilla Firefox can be found here :
 
 [https://addons.mozilla.org/en-US/firefox/addon/mozeidon](https://addons.mozilla.org/en-US/firefox/addon/mozeidon)
 
-Latest version : `3.0` ( previous versions may not work with our latest CLI versions )
+Latest version : `3.0` ( compatible with CLI >= 3.0.0 )  
+New version coming soon : `4.0` ( compatible with CLI >= 4.0.0 )
 
 ## Mozeidon chrome-addon
 
@@ -85,7 +99,8 @@ The mozeidon addon for Google Chrome can be found here :
 
 [https://chromewebstore.google.com/detail/mozeidon/lipjcjopdojfmfjmnponpjkkccbjoipe](https://chromewebstore.google.com/detail/mozeidon/lipjcjopdojfmfjmnponpjkkccbjoipe)
 
-New version coming soon : `3.0` ( previous versions may not work with our latest CLI versions )
+Latest version : `3.0` ( compatible with CLI >= 3.0.0 )  
+New version coming soon : `4.0` ( compatible with CLI >= 4.0.0 )
 
 ## Mozeidon native-app
 
@@ -278,7 +293,7 @@ open new tab [C-o]'\
 ### Swell
 
 [Swell](https://github.com/egovelox/swell) 🏄 🌊 is very fast and has plenty of features  
-( custom shortcuts, chromium or mozilla compatibility, tabs, groups, bookmarks, history ).
+( custom shortcuts, chromium or mozilla compatibility, profile-switch, tabs, groups, bookmarks, history ).
 
 <img width="1141" height="686" alt="swell_tabs_panel" src="https://github.com/user-attachments/assets/ccfc7aac-dc02-4dba-97dd-25ee29da3957" />
 
@@ -356,32 +371,6 @@ You should now be able to execute the CLI using the local binary :
 
 ## Notes and well-known limitations
 
-#### `mozeidon` cannot work simultaneously in different web-browsers
-
-For users who installed both the firefox-addon AND the chrome-addon, or for those who use multiple browsers, each loading the mozeidon extension :
-
-`mozeidon` CLI will not work properly when multiple instances of the mozeidon browser-extension are activated at the same time.  
-To overcome this limitation, keep one extension activated (e.g firefox-addon)  
-and deactivate the other extension (e.g chrome-addon).
-
-If you notice any error during this operation, try to deactivate/reactivate the browser extension 🙏.
-
-This is currently not planned for resolution. Technically, to overcome this limitation, we would need a particular native-messaging-host (`mozeidon-native-app`) 
-for each web-browser.  
-The installation would surely be too complex for most users. 
-(see [architecture](https://github.com/egovelox/mozeidon?tab=readme-ov-file#architecture)),  
-
-#### For a given web-browser, `mozeidon` cannot work correctly if you use multiple browser windows.
-
-Mozeidon cannot guess in which browser window a given tab-id is located.  
-Consequently, if you have 2 browser windows,  
-`mozeidon tabs switch [tab-id]` will switch to the last active browser window,  
-where, possibly, the tab-id you targeted is not located.
-
-This is by design, `mozeidon` was precisely meant to facilitate browsing within a unique browser window.
-
-See [https://github.com/egovelox/mozeidon/issues/6](https://github.com/egovelox/mozeidon/issues/6)
-
 #### `mozeidon bookmark update --folder-path` and browsers' *default bookmark folder*.
 
 ##### TLDR
@@ -418,3 +407,29 @@ meaning that :
 - You cannot move such bookmark in a *child* folder ( i.e inside the *default bookmark folder* ) with e.g (let's say our bookmark-id is `42`) `mozeidon bookmark update 42 --folder-path '//Other Bookmarks/surf/'`
 - Instead, that command will move the bookmark in a `surf` folder, inside a `Other Bookmarks` folder, inside a `""` (no title) folder, inside the *Bookmarks Bar*
 - But still, you can move such bookmark in a folder located inside the *Bookmarks Bar*, with e.g `mozeidon bookmark update 42 --folder-path '/surf/'`
+
+---
+
+#### Before version 4.0.0, `mozeidon` could not work simultaneously in different web-browsers
+
+For users who installed both the firefox-addon AND the chrome-addon, or for those who use multiple browsers, each loading the mozeidon extension :
+
+`mozeidon` CLI ( only before version 4.0.0 ) will not work properly when multiple instances of the mozeidon browser-extension are activated at the same time.  
+To overcome this limitation, keep one extension activated (e.g firefox-addon)  
+and deactivate the other extension (e.g chrome-addon).
+
+If you notice any error during this operation, try to deactivate/reactivate the browser extension 🙏.
+
+--- 
+
+#### Before version 4.0.0, for a given web-browser, `mozeidon` could not work correctly if you used multiple browser windows.
+
+Mozeidon cannot guess in which browser window a given tab-id is located.  
+Consequently, if you have 2 browser windows,  
+`mozeidon tabs switch [tab-id]` will switch to the last active browser window,  
+where, possibly, the tab-id you targeted is not located.
+
+This is by design, `mozeidon` was precisely meant to facilitate browsing within a unique browser window.
+
+See [https://github.com/egovelox/mozeidon/issues/6](https://github.com/egovelox/mozeidon/issues/6)
+

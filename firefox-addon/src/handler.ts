@@ -15,7 +15,9 @@ import {
   switchToTab,
   updateTabs,
 } from "./services/tabs"
+import { updateProfiles } from "./services/profiles"
 import { getGroups, moveGroup, updateGroup } from "./services/groups"
+import { getWindows } from "./services/windows"
 
 export async function handler(port: Port, cmd: Command) {
   switch (cmd.command) {
@@ -49,6 +51,10 @@ export async function handler(port: Port, cmd: Command) {
       return await moveGroup(port, cmd)
     case CommandName.NEW_GROUP_TAB:
       return await newGroupTab(port, cmd)
+    case CommandName.UPDATE_PROFILE:
+      return await updateProfiles(port, cmd)
+    case CommandName.GET_WINDOWS:
+      return await getWindows(port, cmd)
     default:
       log("unknown command received in handler")
       return port.postMessage(Response.end())

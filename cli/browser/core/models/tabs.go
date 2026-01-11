@@ -9,6 +9,17 @@ type TabsWithGroups struct {
 	Groups []Group `json:"groups"`
 }
 
+type TabsWithWindows struct {
+	Items   []Tab    `json:"data"`
+	Windows []Window `json:"windows"`
+}
+
+type TabsWithGroupsAndWindows struct {
+	Items   []Tab    `json:"data"`
+	Groups  []Group  `json:"groups"`
+	Windows []Window `json:"windows"`
+}
+
 type Tab struct {
 	Id           int64  `json:"id"`
 	WindowId     int64  `json:"windowId"`

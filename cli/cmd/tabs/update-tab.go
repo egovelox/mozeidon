@@ -3,6 +3,8 @@ package tabs
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/egovelox/mozeidon/cmd/flags"
+
 	"github.com/egovelox/mozeidon/core"
 )
 
@@ -36,7 +38,7 @@ var UpdateTabCmd = &cobra.Command{
 		"\n\n",
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		app, err := core.NewApp()
+		app, err := core.NewAppWithProfile(flags.ProfileID)
 		if err != nil {
 			core.PrintError(err.Error())
 			return

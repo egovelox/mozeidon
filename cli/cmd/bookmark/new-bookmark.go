@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/egovelox/mozeidon/browser/core/models"
+	"github.com/egovelox/mozeidon/cmd/flags"
 	"github.com/egovelox/mozeidon/core"
 )
 
@@ -16,7 +17,7 @@ var NewBookmarkCmd = &cobra.Command{
 	Long:  "Create a new bookmark",
 	Args:  cobra.NoArgs,
 	Run: func(_ *cobra.Command, args []string) {
-		app, err := core.NewApp()
+		app, err := core.NewAppWithProfile(flags.ProfileID)
 		if err != nil {
 			core.PrintError(err.Error())
 			return

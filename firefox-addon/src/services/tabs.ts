@@ -188,13 +188,24 @@ export async function getRecentlyClosedTabs(
 
 export async function getTabs(port: Port, { command: _cmd, args }: Command) {
   try {
-    const browserTabs = await browser.tabs.query({})
+    let browserTabs = await browser.tabs.query({})
     let returnedTabs = browserTabs.slice()
 
     // if requested in args, the first 10 items are the 10 latest accessed tabs.
     if (args === "latest-10-first") {
-      browserTabs.sort((a, b) => b.lastAccessed! - a.lastAccessed!)
-      const firstOrderedTabs = browserTabs.slice(0, 10)
+      const { id: lastFocusedWindowId } = await browser.windows.getLastFocused()
+      const inFocusedWindow = browserTabs.filter(
+        (t) => t.windowId === lastFocusedWindowId
+      )
+      const others = browserTabs.filter(
+        (t) => t.windowId !== lastFocusedWindowId
+      )
+      inFocusedWindow.sort(
+        (a, b) => (b.lastAccessed ?? 0) - (a.lastAccessed ?? 0)
+      )
+      others.sort((a, b) => (b.lastAccessed ?? 0) - (a.lastAccessed ?? 0))
+
+      const firstOrderedTabs = [...inFocusedWindow, ...others].slice(0, 10)
       returnedTabs = [
         ...firstOrderedTabs,
         ...returnedTabs.filter((t) => !firstOrderedTabs.includes(t)),
@@ -249,6 +260,7 @@ export async function switchToTab(port: Port, { args }: Command) {
     for (let tab of tabItems) {
       if (tab.id === tabId) {
         log("found tab to switch to", tab)
+        await browser.windows.update(windowId, { focused: true })
         browser.tabs.update(tab.id!, { active: true })
         break
       }

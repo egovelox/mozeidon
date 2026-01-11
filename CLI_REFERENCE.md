@@ -6,11 +6,13 @@ Mozeidon is a CLI tool to control browsers from the Firefox or Chromium families
 
 - [Error Output Format](#error-output-format)
 - [Commands](#commands)
+  - [Profile-id](#profile-id-global-flag)
   - [Tabs](#tabs)
   - [Bookmarks](#bookmarks)
   - [Bookmark Operations](#bookmark-operations)
   - [History](#history)
   - [Groups](#groups)
+  - [Profiles](#profiles)
 
 ---
 
@@ -63,8 +65,84 @@ mozeidon
 - Retrieve bookmarks, search and open them
 - Retrieve history
 - Retrieve and manage tab groups
+- Retrieve and manage profiles ( i.e different mozeidon extensions running at the same time )
 
 ---
+
+### Profile Id Global Flag
+
+The `mozeidon` CLI ( since version `4.0.0` ) on any command, globally accepts an optional `--profile-id <string>` flag. 
+
+It's meant to inform the CLI which profile ( i.e browser instance ) you want to use for your command.
+
+Note : 
+- the `mozeidon profiles get` command will give you the available profiles ( one profile for each **running** web-browser where the mozeidon browser-extension is **activated**. )
+- the `--profile-id` global-flag is optional : when it's missing, your command will target the default profile : the profile with the most recent `registeredAt` and highest `rank`. You can change the `rank` on your profiles ( see `mozeidon profiles update` ) precisely to make one or the other profile the default profile.
+
+```sh
+# get all current profiles
+mozeidon profiles get
+
+# output for two connected profiles, please note that :
+# - Firefox ( profileRank 3 ) will be the default profile ( higher rank than Zen with profileRank 1 )
+# - Zen profileName cannot be recognized as `Zen` by the CLI, that's why values for profileAlias and profileCommandAlias were set with the `profiles update` command. 
+{
+  "data": [
+    {
+      "ipcName": "mozeidon_native_app_57604_e9b50fac",
+      "fileName": "57604_e9b50fac.json",
+      "browserName": "Firefox",
+      "browserEngine": "gecko",
+      "browserVersion": "146.0.1",
+      "profileId": "e9b50fac-c364-45c4-822f-4738fd540756",
+      "profileName": "Firefox",
+      "profileAlias": "",
+      "profileCommandAlias": "",
+      "profileRank": 3,
+      "instanceId": "fa7e54a8-8f84-46ff-bd7a-f14aa86a66df",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:146.0) Gecko/20100101 Firefox/146.0",
+      "pid": 57604,
+      "registeredAt": "2026-01-23T00:00:00.000Z"
+    },
+    {
+      "ipcName": "mozeidon_native_app_59284_94e12d30",
+      "fileName": "59284_94e12d30.json",
+      "browserName": "firefox",
+      "browserEngine": "gecko",
+      "browserVersion": "145.0.2",
+      "profileId": "94e12d30-cba2-45fe-9e50-53b10bc68d9b",
+      "profileName": "firefox",
+      "profileAlias": "Zen",
+      "profileCommandAlias": "Zen",
+      "profileRank": 1,
+      "instanceId": "5fab1f7a-8296-46d3-89b7-87b20fe54c4a",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0",
+      "pid": 59284,
+      "registeredAt": "2026-01-23T01:00:00.000Z"
+    }
+  ]
+}
+
+```
+Then :
+
+```sh
+# --profile-id is missing, so get all tabs for default profile
+mozeidon tabs get
+```
+
+```sh
+# get all tabs for Zen (using the profile's alias : Zen)
+mozeidon --profile-id "Zen" tabs get
+```
+
+```sh
+# same than above, the flag is global so it can be in any position.
+mozeidon tabs get --profile-id "Zen"
+
+# same again, but using the profile's id ( might be less convenient than using the profile's alias )
+mozeidon tabs get --profile-id 94e12d30-cba2-45fe-9e50-53b10bc68d9b
+```
 
 ## Tabs
 
@@ -79,7 +157,7 @@ Get all opened tabs.
 mozeidon tabs get [flags]
 ```
 
-**Flags:**
+**Optional Flags:**
 - `-t, --go-template <template>` - Go template to customize output
 - `-c, --closed` - Get only recently-closed tabs
 - `-l, --latest-first` - Order 10 latest accessed tabs first (default: `true`)
@@ -480,7 +558,7 @@ mozeidon history delete --all
 
 ## Groups
 
-Manage tab groups (Chrome/Chromium only).
+Manage tab groups.
 
 ### `groups get`
 
@@ -542,6 +620,130 @@ mozeidon groups update --group-id 1757435983351019 --index 0
 # Update multiple properties (except index)
 mozeidon groups update --group-id 1757435983351019 --title "Dev" --color green
 ```
+---
+
+## Profiles
+
+Manage browser profiles.
+
+Each profile is a set of information related to a browser-instance where the `mozeidon` web-browser extension is active and running.
+
+The `ipcName` value is the name of the ipc-connection the CLI will use to communicate with the `mozeidon-native-app` ( linked to the browser-extension )
+
+The `pid` value is the process id ( on your operating system ) of the `mozeidon-native-app` instance linked to the browser-extension.
+
+Etc.
+
+### `profiles get`
+
+Get all profiles.
+
+**Usage:**
+```bash
+mozeidon profiles get
+```
+
+**Examples:**
+```bash
+# Get all profiles as JSON
+mozeidon profiles get
+
+# JSON output
+{
+  "data": [
+    {
+      "ipcName": "mozeidon_native_app_57604_e9b50fac",
+      "fileName": "57604_e9b50fac.json",
+      "browserName": "Firefox",
+      "browserEngine": "gecko",
+      "browserVersion": "146.0.1",
+      "profileId": "e9b50fac-c364-45c4-822f-4738fd540756",
+      "profileName": "Firefox",
+      "profileAlias": "firefox",
+      "profileCommandAlias": "Firefox",
+      "profileRank": 3,
+      "instanceId": "fa7e54a8-8f84-46ff-bd7a-f14aa86a66df",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:146.0) Gecko/20100101 Firefox/146.0",
+      "pid": 57604,
+      "registeredAt": "2026-01-23T21:13:31.668Z"
+    },
+    {
+      "ipcName": "mozeidon_native_app_59284_94e12d30",
+      "fileName": "59284_94e12d30.json",
+      "browserName": "firefox",
+      "browserEngine": "gecko",
+      "browserVersion": "145.0.2",
+      "profileId": "94e12d30-cba2-45fe-9e50-53b10bc68d9b",
+      "profileName": "firefox",
+      "profileAlias": "zen",
+      "profileCommandAlias": "Zen",
+      "profileRank": 1,
+      "instanceId": "5fab1f7a-8296-46d3-89b7-87b20fe54c4a",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0",
+      "pid": 59284,
+      "registeredAt": "2026-01-23T21:14:05.015Z"
+    },
+    {
+      "ipcName": "mozeidon_native_app_60998_4f88678a",
+      "fileName": "60998_4f88678a.json",
+      "browserName": "Google Chrome",
+      "browserEngine": "chromium",
+      "browserVersion": "142",
+      "profileId": "4f88678a-eef9-4d9c-ad61-04c502126d7b",
+      "profileName": "Google Chrome",
+      "profileAlias": "chrome",
+      "profileCommandAlias": "Google Chrome",
+      "profileRank": 1,
+      "instanceId": "6bfe8b6b-3196-4a13-ab09-e828543aa8a4",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+      "pid": 60998,
+      "registeredAt": "2026-01-23T21:15:01.014Z"
+    }
+  ]
+
+```
+
+```bash
+# Get all profiles formatted with a go-template
+mozeidon profiles get --go-template '{{range .Items}}{{.ProfileId}} with ipc {{.IpcName}} : {{.ProfileName}} {{"\n"}}{{end}}'
+
+# text output :
+e9b50fac-c364-45c4-822f-4738fd540756 with ipc mozeidon_native_app_57604_e9b50fac : firefox
+94e12d30-cba2-45fe-9e50-53b10bc68d9b with ipc mozeidon_native_app_59284_94e12d30 : zen
+4f88678a-eef9-4d9c-ad61-04c502126d7b with ipc mozeidon_native_app_60998_4f88678a : chrome
+
+```
+---
+
+### `profiles update`
+
+Update a tab group's properties or position.
+
+**Usage:**
+```bash
+mozeidon profiles update [flags]
+```
+
+**Optional Flags (at least one required):**
+- `-r, --rank <number>` - The profile's rank ( i.e higher priority over other profiles )
+- `-a, --alias <string>` - The profile's alias ( useful when you need to customize the name of a given profile )
+- `-c, --command-alias <string>` - The profile's command alias ( useful when you need to associate a value to be later used in a command )
+- `--profile-id <string>` - The profile's id ( if missing, the current default profile will be updated )
+
+**Examples:**
+
+Let's first give an practical example :  
+You have a script where your first get profiles,  
+then for each profile you can get the ProfileCommandAlias value,
+then you're able to dynamically switch to each browser window with e.g `open -a $ProfileCommandAlias`
+
+```bash
+# Update a profile's command-alias
+mozeidon profiles update --profile-id 4f88678a-eef9-4d9c-ad61-04c502126d7b -c "Google Chrome"
+
+# Update a profile's alias and rank
+mozeidon profiles update --profile-id 4f88678a-eef9-4d9c-ad61-04c502126d7b -a "Firefox Dev Edition" -r 10
+```
 
 ---
 
@@ -557,6 +759,19 @@ mozeidon tabs get -t '{{range .Items}}Title: {{.Title}}
 URL: {{.Url}}
 ---
 {{end}}'
+
+# text output
+
+Title: Andrea Motis | Collection of Greatest Performances - YouTube
+URL: https://www.youtube.com/watch?v=BVfonxKQo0s
+---
+Title: Jacky Terrasson | Live Studio Session - YouTube
+URL: https://www.youtube.com/watch?v=7FKQI7yuQ8U&list=RD7FKQI7yuQ8U&start_radio=1
+---
+Title: Zines | Learn Temporal
+URL: https://learn.temporal.io/zines/
+---
+
 ```
 
 ### JSON Output
@@ -573,6 +788,11 @@ By default, most commands return JSON-formatted output for easy parsing and inte
 ## Examples
 
 ### Common Workflows
+
+Note: to keep it simple, we omit the `--profile-id` flag in all commands below.  
+You need to add it if you need to target a specific profile.  
+See [Profiles](#profiles).
+
 
 **List all tabs and switch to a specific one:**
 ```bash

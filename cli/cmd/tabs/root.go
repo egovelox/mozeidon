@@ -5,7 +5,8 @@ import (
 )
 
 var TabsCmd = &cobra.Command{
-	Use: "tabs",
+	Use:   "tabs",
+	Short: "Manage tabs",
 }
 
 func init() {
