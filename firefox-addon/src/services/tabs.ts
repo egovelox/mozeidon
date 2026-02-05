@@ -249,6 +249,7 @@ export async function switchToTab(port: Port, { args }: Command) {
     for (let tab of tabItems) {
       if (tab.id === tabId) {
         log("found tab to switch to", tab)
+        browser.windows.update(windowId, { focused: true })
         browser.tabs.update(tab.id!, { active: true })
         break
       }
