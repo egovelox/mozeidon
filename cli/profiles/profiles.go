@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 // Profile represents a running native-app instance
@@ -96,7 +97,81 @@ func isIpcSocketAlive(ipcName string) bool {
 	return err == nil
 }
 
+// findOrphanedSockets returns IPC socket names that have no corresponding profile file.
+// This can happen in containerized environments where the native-app fails to write
+// the profile file, or when the profile was deleted but the socket persists.
+func findOrphanedSockets(profileDir string, existingProfiles map[string]bool) []string {
+	var orphaned []string
+	socketPattern := "/tmp/mozeidon_native_app_*.sock"
+	matches, err := filepath.Glob(socketPattern)
+	if err != nil {
+		return orphaned
+	}
+
+	for _, sockPath := range matches {
+		// Extract ipcName from socket path: /tmp/{ipcName}.sock
+		ipcName := strings.TrimSuffix(filepath.Base(sockPath), ".sock")
+		if !existingProfiles[ipcName] {
+			orphaned = append(orphaned, ipcName)
+		}
+	}
+	return orphaned
+}
+
+// createProfileFromSocket creates a minimal profile for an orphaned socket.
+// The socket name format is: mozeidon_native_app_{PID}_{PROFILE_ID_SHORT}
+// This enables CLI communication when the native-app is running but didn't
+// write a profile file (common in Flatpak/containerized setups).
+func createProfileFromSocket(profileDir string, ipcName string) (*Profile, error) {
+	// Parse socket name: mozeidon_native_app_{PID}_{PROFILE_ID_SHORT}
+	parts := strings.Split(ipcName, "_")
+	if len(parts) < 4 {
+		return nil, fmt.Errorf("invalid socket name format: %s", ipcName)
+	}
+
+	pidStr := parts[3]                      // e.g., "262"
+	profileIdShort := parts[4]              // e.g., "c261f255"
+	pid, _ := strconv.Atoi(pidStr)
+	fileName := fmt.Sprintf("%s_%s.json", pidStr, profileIdShort)
+
+	profile := &Profile{
+		IpcName:        ipcName,
+		FileName:       fileName,
+		BrowserName:    "Unknown",
+		BrowserEngine:  "unknown",
+		BrowserVersion: "unknown",
+		ProfileId:      fmt.Sprintf("%s-0000-0000-0000-000000000000", profileIdShort),
+		ProfileName:    "Auto-created",
+		ProfileAlias:   "",
+		ProfileCommandAlias: "",
+		ProfileRank:    1,
+		InstanceId:     "00000000-0000-0000-0000-000000000000",
+		UserAgent:      "Mozilla/5.0",
+		Pid:            pid,
+		RegisteredAt:   time.Now().UTC().Format(time.RFC3339),
+	}
+
+	// Write the profile file
+	profilePath := filepath.Join(profileDir, fileName)
+	data, err := json.MarshalIndent(profile, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling profile: %w", err)
+	}
+
+	if err := os.MkdirAll(profileDir, 0755); err != nil {
+		return nil, fmt.Errorf("error creating profile directory: %w", err)
+	}
+
+	if err := os.WriteFile(profilePath, data, 0644); err != nil {
+		return nil, fmt.Errorf("error writing profile file: %w", err)
+	}
+
+	return profile, nil
+}
+
 // GetAllProfiles returns all active (running) profiles and removes inactive profiles.
+// If no profiles exist but IPC sockets do, it creates minimal profiles from the socket
+// names to enable CLI communication (handles cases where native-app doesn't write profiles).
 func GetAllProfiles() ([]Profile, error) {
 	profileDir, err := GetProfileDirectory()
 
@@ -104,10 +179,11 @@ func GetAllProfiles() ([]Profile, error) {
 		return nil, fmt.Errorf("error getting %s directory: %w", mozeidonProfilesDir, err)
 	}
 
-	// Check if directory exists
+	// Check if directory exists, create if needed
 	if _, err := os.Stat(profileDir); os.IsNotExist(err) {
-		// Directory doesn't exist, return empty list
-		return []Profile{}, nil
+		if err := os.MkdirAll(profileDir, 0755); err != nil {
+			return nil, fmt.Errorf("error creating %s directory: %w", mozeidonProfilesDir, err)
+		}
 	}
 
 	entries, err := os.ReadDir(profileDir)
@@ -154,6 +230,24 @@ func GetAllProfiles() ([]Profile, error) {
 			err := os.Remove(filePath)
 			if err != nil {
 				return nil, fmt.Errorf("error deleting file in %s directory: %w", mozeidonProfilesDir, err)
+			}
+		}
+	}
+
+	// WORKAROUND: If no profiles found but sockets exist, create profiles from sockets.
+	// This handles containerized environments (Flatpak, Docker) where the native-app
+	// creates the IPC socket but fails to write the profile JSON file.
+	// See: https://github.com/egovelox/mozeidon/issues/XXX (pending investigation)
+	if len(profiles) == 0 {
+		existingIpcNames := make(map[string]bool)
+		for _, p := range profiles {
+			existingIpcNames[p.IpcName] = true
+		}
+
+		orphanedSockets := findOrphanedSockets(profileDir, existingIpcNames)
+		for _, ipcName := range orphanedSockets {
+			if profile, err := createProfileFromSocket(profileDir, ipcName); err == nil {
+				profiles = append(profiles, *profile)
 			}
 		}
 	}
