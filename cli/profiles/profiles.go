@@ -78,6 +78,24 @@ func isProcessRunning(pid int) bool {
 	return true
 }
 
+// isIpcSocketAlive checks if the IPC socket file for a profile exists.
+// This handles containerized environments (Flatpak, Docker, etc.) where the
+// native-app runs in a different PID namespace. The PID written to the profile
+// file is the container-internal PID, which doesn't exist on the host, causing
+// isProcessRunning to return false even though the native-app is running.
+// The IPC socket in /tmp is shared between host and container, so checking
+// for the socket file is a reliable fallback.
+//
+// We only check file existence rather than attempting a connection because
+// the golang-ipc library uses an encrypted handshake — connecting and
+// disconnecting here would disrupt the server's state and cause the real
+// CLI connection to fail.
+func isIpcSocketAlive(ipcName string) bool {
+	socketPath := "/tmp/" + ipcName + ".sock"
+	_, err := os.Stat(socketPath)
+	return err == nil
+}
+
 // GetAllProfiles returns all active (running) profiles and removes inactive profiles.
 func GetAllProfiles() ([]Profile, error) {
 	profileDir, err := GetProfileDirectory()
@@ -125,11 +143,14 @@ func GetAllProfiles() ([]Profile, error) {
 			continue
 		}
 
-		// Only include if process is still running
-		if isProcessRunning(profile.Pid) {
+		// Only include if native-app is still running.
+		// First try PID check (works when CLI and native-app share a PID namespace).
+		// Fall back to IPC socket check for containerized environments (Flatpak,
+		// Docker, etc.) where the native-app's PID is from a different namespace.
+		if isProcessRunning(profile.Pid) || isIpcSocketAlive(profile.IpcName) {
 			profiles = append(profiles, profile)
 		} else {
-			// remove file is process is not running
+			// remove file if native-app is not running
 			err := os.Remove(filePath)
 			if err != nil {
 				return nil, fmt.Errorf("error deleting file in %s directory: %w", mozeidonProfilesDir, err)
